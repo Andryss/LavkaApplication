@@ -1,10 +1,12 @@
 package ru.yandex.yandexlavka.entities;
 
+import java.util.List;
+
 public class GetCourierMetaInfoResponse {
-    Long courier_id;
-    CourierType courier_type;
-    int[] regions;
-    String[] working_hours;
+    Long courierId;
+    CourierType courierType;
+    List<Integer> regions;
+    List<String> workingHours;
     Integer rating;
     Integer earnings;
 }

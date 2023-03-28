@@ -1,8 +1,10 @@
 package ru.yandex.yandexlavka.entities.dto;
 
+import java.util.List;
+
 public class CreateOrderDto {
     Float weight;
     Integer regions;
-    String[] delivery_hours;
+    List<String> deliveryHours;
     Integer cost;
 }

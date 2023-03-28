@@ -6,10 +6,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.entities.CreateCourierRequest;
 import ru.yandex.yandexlavka.entities.CreateCouriersResponse;
-import ru.yandex.yandexlavka.entities.CreateOrderRequest;
 import ru.yandex.yandexlavka.entities.GetCouriersResponse;
 import ru.yandex.yandexlavka.entities.dto.CourierDto;
-import ru.yandex.yandexlavka.entities.dto.OrderDto;
 
 @RestController
 @RequestMapping("/couriers")
@@ -29,7 +27,7 @@ public class CourierController {
 
     @GetMapping("/{courier_id}")
     ResponseEntity<CourierDto[]> getCourierById(
-            @PathVariable Long courier_id
+            @PathVariable(name = "courier_id") Long courierId
     ) {
         // TODO: implement
         return null;
@@ -43,5 +41,4 @@ public class CourierController {
         // TODO: implement
         return null;
     }
-
 }

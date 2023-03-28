@@ -1,6 +1,8 @@
 package ru.yandex.yandexlavka.entities;
 
+import java.util.List;
+
 public class CouriersGroupOrders {
-    Long courier_id;
-    GroupOrders[] orders;
+    Long courierId;
+    List<GroupOrders> orders;
 }

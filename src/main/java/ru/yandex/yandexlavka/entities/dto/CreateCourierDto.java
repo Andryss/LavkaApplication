@@ -2,8 +2,10 @@ package ru.yandex.yandexlavka.entities.dto;
 
 import ru.yandex.yandexlavka.entities.CourierType;
 
+import java.util.List;
+
 public class CreateCourierDto {
-    CourierType courier_type;
-    int[] regions;
-    String[] working_hours;
+    CourierType courierType;
+    List<Integer> regions;
+    List<String> workingHours;
 }

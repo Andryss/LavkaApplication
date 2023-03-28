@@ -2,7 +2,9 @@ package ru.yandex.yandexlavka.entities;
 
 import ru.yandex.yandexlavka.entities.dto.OrderDto;
 
+import java.util.List;
+
 public class GroupOrders {
-    Long group_order_id;
-    OrderDto[] orders;
+    Long groupOrderId;
+    List<OrderDto> orders;
 }

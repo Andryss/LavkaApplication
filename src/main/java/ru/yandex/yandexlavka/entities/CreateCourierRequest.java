@@ -2,6 +2,8 @@ package ru.yandex.yandexlavka.entities;
 
 import ru.yandex.yandexlavka.entities.dto.CreateCourierDto;
 
+import java.util.List;
+
 public class CreateCourierRequest {
-    CreateCourierDto[] couriers;
+    List<CreateCourierDto> couriers;
 }

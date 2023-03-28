@@ -1,12 +1,13 @@
 package ru.yandex.yandexlavka.entities.dto;
 
 import java.util.Date;
+import java.util.List;
 
 public class OrderDto {
-    Long order_id;
+    Long orderId;
     Float weight;
     Integer regions;
-    String[] delivery_hours;
+    List<String> deliveryHours;
     Integer cost;
-    Date completed_time;
+    Date completedTime;
 }

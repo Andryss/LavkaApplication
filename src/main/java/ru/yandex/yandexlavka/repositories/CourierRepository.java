@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public class CourierRepository {
 
+    // FIXME: change db
     private long courierId = 0;
     private final List<CourierDto> courierDtoList = new ArrayList<>(1024);
 

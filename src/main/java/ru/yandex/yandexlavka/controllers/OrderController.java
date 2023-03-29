@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.entities.*;
-import ru.yandex.yandexlavka.entities.dto.CourierDto;
+import ru.yandex.yandexlavka.entities.dto.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.entities.dto.OrderDto;
 import ru.yandex.yandexlavka.serivces.OrderService;
 
@@ -54,6 +54,17 @@ public class OrderController {
         if (offset < 0 || limit < 1)
             return ResponseEntity.badRequest().body(new BadRequestResponse());
         List<OrderDto> response = orderService.getOrderRange(offset, limit);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/complete")
+    ResponseEntity<?> completeOrder(
+            @RequestBody @Valid CompleteOrderRequestDto completeOrderRequestDto,
+            BindingResult bindingResult
+    ) { // TODO: what should I do if some Ids are incorrect? (return bad request or set only valid)
+        if (bindingResult.hasErrors())
+            return ResponseEntity.badRequest().body(new BadRequestResponse());
+        List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
     }
 }

@@ -2,15 +2,8 @@ package ru.yandex.yandexlavka.serivces;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.yandexlavka.entities.CreateCourierRequest;
-import ru.yandex.yandexlavka.entities.CreateCouriersResponse;
-import ru.yandex.yandexlavka.entities.CreateOrderRequest;
-import ru.yandex.yandexlavka.entities.GetCouriersResponse;
-import ru.yandex.yandexlavka.entities.dto.CourierDto;
-import ru.yandex.yandexlavka.entities.dto.CreateCourierDto;
-import ru.yandex.yandexlavka.entities.dto.CreateOrderDto;
-import ru.yandex.yandexlavka.entities.dto.OrderDto;
-import ru.yandex.yandexlavka.repositories.CourierRepository;
+import ru.yandex.yandexlavka.entities.*;
+import ru.yandex.yandexlavka.entities.dto.*;
 import ru.yandex.yandexlavka.repositories.OrderRepository;
 
 import java.util.List;
@@ -37,5 +30,10 @@ public class OrderService {
 
     public List<OrderDto> getOrderRange(Integer offset, Integer limit) {
         return orderRepository.getOrderRange(offset, limit);
+    }
+
+    public List<OrderDto> completeOrders(CompleteOrderRequestDto completeOrderRequestDto) {
+        List<CompleteOrder> completeInfo = completeOrderRequestDto.getCompleteInfo();
+        return orderRepository.setAllOrdersCompletedTime(completeInfo);
     }
 }

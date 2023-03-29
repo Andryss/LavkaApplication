@@ -16,7 +16,7 @@ public class OrderDto {
     Integer regions;
     List<String> deliveryHours;
     Integer cost;
-    Date completedTime;
+    Date completedTime; // TODO: do i need to return it if null?
 
     public OrderDto(CreateOrderDto createOrderDto) {
         weight = createOrderDto.weight;

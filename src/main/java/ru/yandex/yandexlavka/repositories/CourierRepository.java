@@ -1,6 +1,7 @@
 package ru.yandex.yandexlavka.repositories;
 
 import org.springframework.stereotype.Repository;
+import ru.yandex.yandexlavka.entities.CompleteOrder;
 import ru.yandex.yandexlavka.entities.dto.CourierDto;
 import ru.yandex.yandexlavka.entities.dto.CreateCourierDto;
 
@@ -36,6 +37,14 @@ public class CourierRepository {
     public List<CourierDto> getCourierRange(int offset, int limit) {
         if (offset >= courierDtoList.size()) return Collections.emptyList();
         return courierDtoList.subList(offset, Math.min(offset + limit, courierDtoList.size()));
+    }
+
+    public boolean hasCourier(Long courierId) {
+        return getCourierById(courierId).isPresent();
+    }
+
+    public boolean hasAllCouriers(List<CompleteOrder> completeOrders) {
+        return completeOrders.stream().allMatch(completeOrder -> hasCourier(completeOrder.getCourierId()));
     }
 
 }

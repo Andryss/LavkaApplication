@@ -3,15 +3,15 @@ package ru.yandex.yandexlavka.controllers;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.entities.*;
 import ru.yandex.yandexlavka.entities.dto.CourierDto;
+import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
+import ru.yandex.yandexlavka.entities.exceptions.NotFoundException;
 import ru.yandex.yandexlavka.serivces.CourierService;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -26,34 +26,44 @@ public class CourierController {
     }
 
     @PostMapping
-    ResponseEntity<?> createCourier(
+    ResponseEntity<CreateCouriersResponse> createCourier(
             @RequestBody @Valid CreateCourierRequest createCourierRequest,
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors())
-            return ResponseEntity.badRequest().body(new BadRequestResponse());
+            throw new BadRequestException();
         CreateCouriersResponse response = courierService.addCouriers(createCourierRequest);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{courier_id}")
-    ResponseEntity<?> getCourierById(
+    ResponseEntity<CourierDto> getCourierById(
             @PathVariable(name = "courier_id") Long courierId
     ) {
         Optional<CourierDto> courierById = courierService.getCourierById(courierId);
         if (courierById.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new NotFoundResponse());
+            throw new NotFoundException();
         return ResponseEntity.ok(courierById.get());
     }
 
     @GetMapping
-    ResponseEntity<?> getCouriers(
+    ResponseEntity<GetCouriersResponse> getCouriers(
             @RequestParam(defaultValue = "0") Integer offset,
             @RequestParam(defaultValue = "1") Integer limit
     ) {
         if (offset < 0 || limit < 1)
-            return ResponseEntity.badRequest().body(new BadRequestResponse());
+            throw new BadRequestException();
         GetCouriersResponse response = courierService.getCourierRange(offset, limit);
         return ResponseEntity.ok(response);
+    }
+
+    @ExceptionHandler({ BadRequestException.class })
+    ResponseEntity<BadRequestResponse> handleBadRequest() {
+        return ResponseEntity.badRequest().body(new BadRequestResponse());
+    }
+
+    @ExceptionHandler({ NotFoundException.class })
+    ResponseEntity<NotFoundResponse> handleNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new NotFoundResponse());
     }
 }

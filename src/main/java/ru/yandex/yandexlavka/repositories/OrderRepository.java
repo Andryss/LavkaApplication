@@ -46,6 +46,7 @@ public class OrderRepository {
     }
 
     public List<OrderDto> setAllOrdersCompletedTime(List<CompleteOrder> completeOrderList) {
+        // TODO: add check
         List<OrderDto> setOrders = new ArrayList<>(completeOrderList.size());
         completeOrderList.forEach(completeOrder -> {
             Optional<OrderDto> orderDto = setOrderCompletedTime(

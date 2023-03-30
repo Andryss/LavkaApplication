@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.entities.*;
 import ru.yandex.yandexlavka.entities.dto.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.entities.dto.OrderDto;
+import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
+import ru.yandex.yandexlavka.entities.exceptions.NotFoundException;
 import ru.yandex.yandexlavka.serivces.OrderService;
 
 import java.util.List;
@@ -26,45 +28,55 @@ public class OrderController {
     }
 
     @PostMapping
-    ResponseEntity<?> createOrder(
+    ResponseEntity<List<OrderDto>> createOrder(
             @RequestBody @Valid CreateOrderRequest createOrderRequest,
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors())
-            return ResponseEntity.badRequest().body(new BadRequestResponse());
+            throw new BadRequestException();
         List<OrderDto> response = orderService.addOrders(createOrderRequest);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{order_id}")
-    ResponseEntity<?> getOrder(
+    ResponseEntity<OrderDto> getOrder(
             @PathVariable(name = "order_id") Long orderId
     ) {
         Optional<OrderDto> orderById = orderService.getOrderById(orderId);
         if (orderById.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new NotFoundResponse());
+            throw new NotFoundException();
         return ResponseEntity.ok(orderById.get());
     }
 
     @GetMapping
-    ResponseEntity<?> getOrders(
+    ResponseEntity<List<OrderDto>> getOrders(
             @RequestParam(defaultValue = "0") Integer offset,
             @RequestParam(defaultValue = "1") Integer limit
     ) {
         if (offset < 0 || limit < 1)
-            return ResponseEntity.badRequest().body(new BadRequestResponse());
+            throw new BadRequestException();
         List<OrderDto> response = orderService.getOrderRange(offset, limit);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/complete")
-    ResponseEntity<?> completeOrder(
+    ResponseEntity<List<OrderDto>> completeOrder(
             @RequestBody @Valid CompleteOrderRequestDto completeOrderRequestDto,
             BindingResult bindingResult
-    ) { // TODO: what should I do if some Ids are incorrect? (return bad request or set only valid)
+    ) {
         if (bindingResult.hasErrors())
-            return ResponseEntity.badRequest().body(new BadRequestResponse());
+            throw new BadRequestException();
         List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
+    }
+
+    @ExceptionHandler({ BadRequestException.class })
+    ResponseEntity<BadRequestResponse> handleBadRequest() {
+        return ResponseEntity.badRequest().body(new BadRequestResponse());
+    }
+
+    @ExceptionHandler({ NotFoundException.class })
+    ResponseEntity<NotFoundResponse> handleNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new NotFoundResponse());
     }
 }

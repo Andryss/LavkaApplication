@@ -33,6 +33,7 @@ public class OrderService {
     }
 
     public List<OrderDto> completeOrders(CompleteOrderRequestDto completeOrderRequestDto) {
+        // TODO: add check
         List<CompleteOrder> completeInfo = completeOrderRequestDto.getCompleteInfo();
         return orderRepository.setAllOrdersCompletedTime(completeInfo);
     }

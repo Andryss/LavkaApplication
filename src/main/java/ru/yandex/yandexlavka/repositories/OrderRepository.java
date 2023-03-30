@@ -2,12 +2,13 @@ package ru.yandex.yandexlavka.repositories;
 
 import org.springframework.stereotype.Repository;
 import ru.yandex.yandexlavka.entities.CompleteOrder;
-import ru.yandex.yandexlavka.entities.dto.CourierDto;
-import ru.yandex.yandexlavka.entities.dto.CreateCourierDto;
 import ru.yandex.yandexlavka.entities.dto.CreateOrderDto;
 import ru.yandex.yandexlavka.entities.dto.OrderDto;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class OrderRepository {
@@ -15,11 +16,13 @@ public class OrderRepository {
     // FIXME: change db
     private long orderId = 0;
     private final List<OrderDto> orderDtoList = new ArrayList<>(1024);
+    private final List<Long> assignedCourierIdList = new ArrayList<>(1024);
 
     public OrderDto addOrder(CreateOrderDto createOrderDto) {
         OrderDto orderDto = new OrderDto(createOrderDto);
         orderDto.setOrderId(orderId++);
         orderDtoList.add(orderDto);
+        assignedCourierIdList.add(null);
         return orderDto;
     }
 
@@ -38,22 +41,29 @@ public class OrderRepository {
         return orderDtoList.subList(offset, Math.min(offset + limit, orderDtoList.size()));
     }
 
-    public Optional<OrderDto> setOrderCompletedTime(Long orderId, Date completedTime) {
-        return getOrderById(orderId).map(orderDto -> {
-            orderDto.setCompletedTime(completedTime);
-            return orderDto;
-        });
+    private boolean isOrderCorrect(CompleteOrder completeOrder) {
+        Optional<OrderDto> orderById = getOrderById(completeOrder.getOrderId());
+        if (orderById.isEmpty()) return false;
+        int index = orderDtoList.indexOf(orderById.get());
+        Long courierId = assignedCourierIdList.get(index);
+        return completeOrder.getCourierId().equals(courierId);
+    }
+
+    public boolean isAllOrdersCorrect(List<CompleteOrder> completeOrderList) {
+        return completeOrderList.stream().allMatch(this::isOrderCorrect);
+    }
+
+    private void completeOrder(CompleteOrder completeOrder) {
+        getOrderById(completeOrder.getOrderId())
+                .ifPresent(orderDto -> orderDto.setCompletedTime(completeOrder.getCompleteTime()));
     }
 
     public List<OrderDto> setAllOrdersCompletedTime(List<CompleteOrder> completeOrderList) {
-        // TODO: add check
         List<OrderDto> setOrders = new ArrayList<>(completeOrderList.size());
-        completeOrderList.forEach(completeOrder -> {
-            Optional<OrderDto> orderDto = setOrderCompletedTime(
-                    completeOrder.getOrderId(),
-                    completeOrder.getCompleteTime()
-            );
-            orderDto.ifPresent(setOrders::add);
+        completeOrderList.forEach(completedOrder -> {
+            completeOrder(completedOrder);
+            Optional<OrderDto> orderById = getOrderById(completedOrder.getOrderId());
+            orderById.ifPresent(setOrders::add);
         });
         return setOrders;
     }

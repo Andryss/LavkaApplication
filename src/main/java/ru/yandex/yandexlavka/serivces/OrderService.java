@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.yandexlavka.entities.*;
 import ru.yandex.yandexlavka.entities.dto.*;
+import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
 import ru.yandex.yandexlavka.repositories.OrderRepository;
 
 import java.util.List;
@@ -33,8 +34,9 @@ public class OrderService {
     }
 
     public List<OrderDto> completeOrders(CompleteOrderRequestDto completeOrderRequestDto) {
-        // TODO: add check
         List<CompleteOrder> completeInfo = completeOrderRequestDto.getCompleteInfo();
+        if (!orderRepository.isAllOrdersCorrect(completeInfo))
+            throw new BadRequestException();
         return orderRepository.setAllOrdersCompletedTime(completeInfo);
     }
 }

@@ -6,11 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.yandexlavka.entities.*;
-import ru.yandex.yandexlavka.entities.dto.CompleteOrderRequestDto;
-import ru.yandex.yandexlavka.entities.dto.OrderDto;
+import ru.yandex.yandexlavka.entities.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.entities.orders.CreateOrderRequest;
+import ru.yandex.yandexlavka.entities.orders.OrderDto;
 import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
+import ru.yandex.yandexlavka.entities.exceptions.BadRequestResponse;
 import ru.yandex.yandexlavka.entities.exceptions.NotFoundException;
+import ru.yandex.yandexlavka.entities.exceptions.NotFoundResponse;
 import ru.yandex.yandexlavka.serivces.OrderService;
 
 import java.util.List;

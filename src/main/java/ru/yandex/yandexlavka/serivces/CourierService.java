@@ -2,14 +2,13 @@ package ru.yandex.yandexlavka.serivces;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.yandexlavka.entities.CreateCourierRequest;
-import ru.yandex.yandexlavka.entities.CreateCouriersResponse;
-import ru.yandex.yandexlavka.entities.GetCouriersResponse;
-import ru.yandex.yandexlavka.entities.dto.CourierDto;
-import ru.yandex.yandexlavka.entities.dto.CreateCourierDto;
+import ru.yandex.yandexlavka.entities.couriers.CreateCourierRequest;
+import ru.yandex.yandexlavka.entities.couriers.CreateCouriersResponse;
+import ru.yandex.yandexlavka.entities.couriers.GetCouriersResponse;
+import ru.yandex.yandexlavka.entities.couriers.CourierDto;
+import ru.yandex.yandexlavka.entities.couriers.CreateCourierDto;
 import ru.yandex.yandexlavka.repositories.CourierRepository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 

@@ -1,9 +1,8 @@
-package ru.yandex.yandexlavka.entities.dto;
+package ru.yandex.yandexlavka.entities.couriers;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.yandex.yandexlavka.entities.CourierType;
 
 import java.util.List;
 

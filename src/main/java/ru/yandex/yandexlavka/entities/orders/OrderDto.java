@@ -1,4 +1,4 @@
-package ru.yandex.yandexlavka.entities.dto;
+package ru.yandex.yandexlavka.entities.orders;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,9 +1,9 @@
 package ru.yandex.yandexlavka.repositories;
 
 import org.springframework.stereotype.Repository;
-import ru.yandex.yandexlavka.entities.CompleteOrder;
-import ru.yandex.yandexlavka.entities.dto.CourierDto;
-import ru.yandex.yandexlavka.entities.dto.CreateCourierDto;
+import ru.yandex.yandexlavka.entities.orders.CompleteOrder;
+import ru.yandex.yandexlavka.entities.couriers.CourierDto;
+import ru.yandex.yandexlavka.entities.couriers.CreateCourierDto;
 
 import java.util.ArrayList;
 import java.util.Collections;

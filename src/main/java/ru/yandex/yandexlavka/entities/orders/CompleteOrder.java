@@ -1,4 +1,4 @@
-package ru.yandex.yandexlavka.entities;
+package ru.yandex.yandexlavka.entities.orders;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

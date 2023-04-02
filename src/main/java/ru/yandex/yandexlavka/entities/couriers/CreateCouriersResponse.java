@@ -1,17 +1,14 @@
-package ru.yandex.yandexlavka.entities;
+package ru.yandex.yandexlavka.entities.couriers;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.yandex.yandexlavka.entities.dto.CourierDto;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetCouriersResponse {
+public class CreateCouriersResponse {
     List<CourierDto> couriers;
-    Integer limit;
-    Integer offset;
 }

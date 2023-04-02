@@ -1,21 +1,22 @@
-package ru.yandex.yandexlavka.entities.dto;
+package ru.yandex.yandexlavka.entities.orders;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.yandex.yandexlavka.entities.CourierType;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateCourierDto {
+public class CreateOrderDto {
     @NotNull
-    CourierType courierType;
+    Float weight;
     @NotNull
-    List<Integer> regions;
+    Integer regions;
     @NotNull
-    List<String> workingHours; // TODO: validation
+    List<String> deliveryHours; // TODO: validate
+    @NotNull
+    Integer cost;
 }

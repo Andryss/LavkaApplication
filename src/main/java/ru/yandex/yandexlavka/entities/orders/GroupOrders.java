@@ -1,6 +1,6 @@
-package ru.yandex.yandexlavka.entities;
+package ru.yandex.yandexlavka.entities.orders;
 
-import ru.yandex.yandexlavka.entities.dto.OrderDto;
+import ru.yandex.yandexlavka.entities.orders.OrderDto;
 
 import java.util.List;
 

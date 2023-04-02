@@ -1,4 +1,4 @@
-package ru.yandex.yandexlavka.entities;
+package ru.yandex.yandexlavka.entities.couriers;
 
 import java.util.List;
 

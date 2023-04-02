@@ -3,8 +3,11 @@ package ru.yandex.yandexlavka.serivces;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.yandexlavka.entities.*;
-import ru.yandex.yandexlavka.entities.dto.*;
 import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
+import ru.yandex.yandexlavka.entities.orders.CompleteOrder;
+import ru.yandex.yandexlavka.entities.orders.CreateOrderDto;
+import ru.yandex.yandexlavka.entities.orders.CreateOrderRequest;
+import ru.yandex.yandexlavka.entities.orders.OrderDto;
 import ru.yandex.yandexlavka.repositories.OrderRepository;
 
 import java.util.List;

@@ -6,10 +6,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.yandexlavka.entities.*;
-import ru.yandex.yandexlavka.entities.dto.CourierDto;
+import ru.yandex.yandexlavka.entities.couriers.CreateCourierRequest;
+import ru.yandex.yandexlavka.entities.couriers.CourierDto;
+import ru.yandex.yandexlavka.entities.couriers.CreateCouriersResponse;
+import ru.yandex.yandexlavka.entities.couriers.GetCouriersResponse;
 import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
+import ru.yandex.yandexlavka.entities.exceptions.BadRequestResponse;
 import ru.yandex.yandexlavka.entities.exceptions.NotFoundException;
+import ru.yandex.yandexlavka.entities.exceptions.NotFoundResponse;
 import ru.yandex.yandexlavka.serivces.CourierService;
 
 import java.util.Optional;

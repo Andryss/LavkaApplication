@@ -11,6 +11,9 @@ import ru.yandex.yandexlavka.repositories.CourierRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class CourierService {
@@ -24,8 +27,9 @@ public class CourierService {
 
     public CreateCouriersResponse addCouriers(CreateCourierRequest request) {
         List<CreateCourierDto> createCourierDtoList = request.getCouriers();
-        List<CourierDto> courierDtoList = courierRepository.addAllCouriers(createCourierDtoList);
-        return new CreateCouriersResponse(courierDtoList);
+        List<CourierDto> courierDtoList = createCourierDtoList.stream().map(CourierDto::new).toList();
+        List<CourierDto> response = courierRepository.addAllCouriers(courierDtoList);
+        return new CreateCouriersResponse(response);
     }
 
     public Optional<CourierDto> getCourierById(Long courierId) {

@@ -17,16 +17,15 @@ public class CourierRepository {
     private long courierId = 0;
     private final List<CourierDto> courierDtoList = new ArrayList<>(1024);
 
-    public CourierDto addCourier(CreateCourierDto createCourierDto) {
-        CourierDto courierDto = new CourierDto(createCourierDto);
+    public CourierDto addCourier(CourierDto courierDto) {
         courierDto.setCourierId(courierId++);
         courierDtoList.add(courierDto);
         return courierDto;
     }
 
-    public List<CourierDto> addAllCouriers(List<CreateCourierDto> createCourierDtoList) {
-        List<CourierDto> courierDtos = new ArrayList<>(createCourierDtoList.size());
-        createCourierDtoList.forEach(createCourierDto -> courierDtos.add(addCourier(createCourierDto)));
+    public List<CourierDto> addAllCouriers(List<CourierDto> courierDtoList) {
+        List<CourierDto> courierDtos = new ArrayList<>(courierDtoList.size());
+        courierDtoList.forEach(courierDto -> courierDtos.add(addCourier(courierDto)));
         return courierDtos;
     }
 

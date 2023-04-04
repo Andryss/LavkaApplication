@@ -2,7 +2,6 @@ package ru.yandex.yandexlavka.repositories;
 
 import org.springframework.stereotype.Repository;
 import ru.yandex.yandexlavka.entities.orders.CompleteOrder;
-import ru.yandex.yandexlavka.entities.orders.CreateOrderDto;
 import ru.yandex.yandexlavka.entities.orders.OrderDto;
 
 import java.util.ArrayList;
@@ -18,17 +17,16 @@ public class OrderRepository {
     private final List<OrderDto> orderDtoList = new ArrayList<>(1024);
     private final List<Long> assignedCourierIdList = new ArrayList<>(1024);
 
-    public OrderDto addOrder(CreateOrderDto createOrderDto) {
-        OrderDto orderDto = new OrderDto(createOrderDto);
+    public OrderDto addOrder(OrderDto orderDto) {
         orderDto.setOrderId(orderId++);
         orderDtoList.add(orderDto);
         assignedCourierIdList.add(null);
         return orderDto;
     }
 
-    public List<OrderDto> addAllOrders(List<CreateOrderDto> createOrderDtoList) {
-        List<OrderDto> orderDtos = new ArrayList<>(createOrderDtoList.size());
-        createOrderDtoList.forEach(createOrderDto -> orderDtos.add(addOrder(createOrderDto)));
+    public List<OrderDto> addAllOrders(List<OrderDto> orderDtoList) {
+        List<OrderDto> orderDtos = new ArrayList<>(orderDtoList.size());
+        orderDtoList.forEach(orderDto -> orderDtos.add(addOrder(orderDto)));
         return orderDtos;
     }
 

@@ -1,9 +1,12 @@
 package ru.yandex.yandexlavka.serivces;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import ru.yandex.yandexlavka.entities.couriers.*;
+import ru.yandex.yandexlavka.entities.mappers.CourierMapper;
 import ru.yandex.yandexlavka.repositories.CourierRepository;
+import ru.yandex.yandexlavka.repositories.OffsetLimitPageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,25 +15,32 @@ import java.util.Optional;
 public class CourierService {
 
     private final CourierRepository courierRepository;
+    private final CourierMapper courierMapper;
 
     @Autowired
-    public CourierService(CourierRepository courierRepository) {
+    public CourierService(CourierRepository courierRepository, CourierMapper courierMapper) {
         this.courierRepository = courierRepository;
+        this.courierMapper = courierMapper;
     }
 
     public CreateCouriersResponse addCouriers(CreateCourierRequest request) {
-        List<CreateCourierDto> createCourierDtoList = request.getCouriers();
-        List<CourierDto> courierDtoList = createCourierDtoList.stream().map(CourierDto::new).toList();
-        List<CourierDto> response = courierRepository.addAllCouriers(courierDtoList);
+        List<CourierDto> response = request.getCouriers().stream()
+                .map(courierMapper::mapCourierEntity)
+                .map(courierRepository::save) // TODO: may be change to saveAll?
+                .map(courierMapper::mapCourierDto)
+                .toList();
         return new CreateCouriersResponse(response);
     }
 
     public Optional<CourierDto> getCourierById(Long courierId) {
-        return courierRepository.getCourierById(courierId);
+        return courierRepository.findById(courierId).map(courierMapper::mapCourierDto);
     }
 
     public GetCouriersResponse getCourierRange(Integer offset, Integer limit) {
-        List<CourierDto> courierRange = courierRepository.getCourierRange(offset, limit);
+        Page<CourierEntity> courierEntityPage = courierRepository.findAll(OffsetLimitPageable.of(offset, limit));
+        List<CourierDto> courierRange = courierEntityPage.stream()
+                .map(courierMapper::mapCourierDto)
+                .toList();
         return new GetCouriersResponse(courierRange, limit, offset);
     }
 }

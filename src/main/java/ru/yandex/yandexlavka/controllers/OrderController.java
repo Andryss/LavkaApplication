@@ -36,6 +36,7 @@ public class OrderController {
     ) {
         if (bindingResult.hasErrors())
             throw new BadRequestException();
+        // TODO: add orders delivery hours validation
         List<OrderDto> response = orderService.addOrders(createOrderRequest);
         return ResponseEntity.ok(response);
     }
@@ -68,6 +69,7 @@ public class OrderController {
     ) {
         if (bindingResult.hasErrors())
             throw new BadRequestException();
+        // TODO: add request simple validation
         List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
     }

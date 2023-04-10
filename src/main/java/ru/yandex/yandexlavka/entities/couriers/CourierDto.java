@@ -14,10 +14,4 @@ public class CourierDto {
     CourierType courierType;
     List<Integer> regions;
     List<String> workingHours;
-
-    public CourierDto(CreateCourierDto createCourierDto) {
-        courierType = createCourierDto.courierType;
-        regions = createCourierDto.regions;
-        workingHours = createCourierDto.workingHours;
-    }
 }

@@ -17,11 +17,4 @@ public class OrderDto {
     List<String> deliveryHours;
     Integer cost;
     Date completedTime; // TODO: do i need to return it if null?
-
-    public OrderDto(CreateOrderDto createOrderDto) {
-        weight = createOrderDto.weight;
-        regions = createOrderDto.regions;
-        deliveryHours = createOrderDto.deliveryHours;
-        cost = createOrderDto.cost;
-    }
 }

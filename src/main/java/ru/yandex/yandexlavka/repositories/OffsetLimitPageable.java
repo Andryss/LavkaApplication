@@ -7,12 +7,13 @@ import org.springframework.data.domain.Sort;
 public class OffsetLimitPageable implements Pageable {
     private final int offset;
     private final int limit;
+    private final Sort sort;
 
     public static Pageable of(int offset, int limit) {
-        return new OffsetLimitPageable(offset, limit);
+        return new OffsetLimitPageable(offset, limit, Sort.unsorted());
     }
 
-    private OffsetLimitPageable(int offset, int limit) {
+    private OffsetLimitPageable(int offset, int limit, Sort sort) {
         if (offset < 0)
             throw new IllegalArgumentException("Offset must not be less than zero!");
 
@@ -21,6 +22,7 @@ public class OffsetLimitPageable implements Pageable {
 
         this.offset = offset;
         this.limit = limit;
+        this.sort = sort;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class OffsetLimitPageable implements Pageable {
     public long getOffset() { return offset; }
 
     @Override
-    public Sort getSort() { return null; }
+    public Sort getSort() { return sort; }
 
     @Override
     public Pageable next() { return null; }

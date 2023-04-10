@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.yandexlavka.controllers.validators.CreateOrderRequestValidator;
 import ru.yandex.yandexlavka.entities.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.entities.orders.CreateOrderRequest;
 import ru.yandex.yandexlavka.entities.orders.OrderDto;
@@ -22,10 +23,12 @@ import java.util.Optional;
 @RequestMapping("/orders")
 public class OrderController {
 
+    private final CreateOrderRequestValidator createOrderRequestValidator;
     private final OrderService orderService;
 
     @Autowired
-    public OrderController(OrderService orderService) {
+    public OrderController(CreateOrderRequestValidator createOrderRequestValidator, OrderService orderService) {
+        this.createOrderRequestValidator = createOrderRequestValidator;
         this.orderService = orderService;
     }
 
@@ -34,9 +37,9 @@ public class OrderController {
             @RequestBody @Valid CreateOrderRequest createOrderRequest,
             BindingResult bindingResult
     ) {
+        createOrderRequestValidator.validate(createOrderRequest, bindingResult);
         if (bindingResult.hasErrors())
             throw new BadRequestException();
-        // TODO: add orders delivery hours validation
         List<OrderDto> response = orderService.addOrders(createOrderRequest);
         return ResponseEntity.ok(response);
     }
@@ -69,7 +72,6 @@ public class OrderController {
     ) {
         if (bindingResult.hasErrors())
             throw new BadRequestException();
-        // TODO: add request simple validation
         List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
     }

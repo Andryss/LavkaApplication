@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.yandexlavka.controllers.validators.CreateCourierRequestValidator;
 import ru.yandex.yandexlavka.entities.couriers.CreateCourierRequest;
 import ru.yandex.yandexlavka.entities.couriers.CourierDto;
 import ru.yandex.yandexlavka.entities.couriers.CreateCouriersResponse;
@@ -22,10 +23,12 @@ import java.util.Optional;
 @RequestMapping("/couriers")
 public class CourierController {
 
+    private final CreateCourierRequestValidator createCourierRequestValidator;
     private final CourierService courierService;
 
     @Autowired
-    public CourierController(CourierService courierService) {
+    public CourierController(CreateCourierRequestValidator createCourierRequestValidator, CourierService courierService) {
+        this.createCourierRequestValidator = createCourierRequestValidator;
         this.courierService = courierService;
     }
 
@@ -34,6 +37,7 @@ public class CourierController {
             @RequestBody @Valid CreateCourierRequest createCourierRequest,
             BindingResult bindingResult
     ) {
+        createCourierRequestValidator.validate(createCourierRequest, bindingResult);
         if (bindingResult.hasErrors())
             throw new BadRequestException();
         CreateCouriersResponse response = courierService.addCouriers(createCourierRequest);

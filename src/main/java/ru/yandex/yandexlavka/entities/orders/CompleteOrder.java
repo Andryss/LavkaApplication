@@ -13,8 +13,10 @@ import java.util.Date;
 public class CompleteOrder {
     @NotNull
     Long courierId;
+
     @NotNull
     Long orderId;
+
     @NotNull
     Date completeTime; // TODO: check parsing String->Date
 }

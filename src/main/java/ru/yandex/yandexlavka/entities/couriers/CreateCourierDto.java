@@ -13,8 +13,10 @@ import java.util.List;
 public class CreateCourierDto {
     @NotNull
     CourierType courierType;
+
     @NotNull
     List<Integer> regions;
+
     @NotNull
-    List<String> workingHours; // TODO: validation
+    List<String> workingHours;
 }

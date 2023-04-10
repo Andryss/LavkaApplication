@@ -32,9 +32,10 @@ public class OrderService {
     }
 
     public List<OrderDto> addOrders(CreateOrderRequest request) {
-        return request.getOrders().stream()
+        List<OrderEntity> orderEntitiesToSave = request.getOrders().stream()
                 .map(orderMapper::mapOrderEntity)
-                .map(orderRepository::save)
+                .toList();
+        return orderRepository.saveAll(orderEntitiesToSave).stream()
                 .map(orderMapper::mapOrderDto)
                 .toList();
     }

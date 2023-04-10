@@ -24,9 +24,10 @@ public class CourierService {
     }
 
     public CreateCouriersResponse addCouriers(CreateCourierRequest request) {
-        List<CourierDto> response = request.getCouriers().stream()
+        List<CourierEntity> courierEntitiesToSave = request.getCouriers().stream()
                 .map(courierMapper::mapCourierEntity)
-                .map(courierRepository::save) // TODO: may be change to saveAll?
+                .toList();
+        List<CourierDto> response = courierRepository.saveAll(courierEntitiesToSave).stream()
                 .map(courierMapper::mapCourierDto)
                 .toList();
         return new CreateCouriersResponse(response);

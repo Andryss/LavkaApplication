@@ -25,11 +25,11 @@ public class CreateCourierDtoValidator implements Validator {
 
     @Override
     public void validate(@Nullable Object target, @NonNull Errors errors) {
-        if (target == null) {
+        CreateCourierDto createCourierDto = ((CreateCourierDto) target);
+        if (createCourierDto == null || createCourierDto.getWorkingHours() == null) {
             errors.reject("", "Target is null");
             return;
         }
-        CreateCourierDto createCourierDto = ((CreateCourierDto) target);
         createCourierDto.getWorkingHours().forEach(s -> timeValidator.validate(s, errors));
     }
 }

@@ -27,6 +27,11 @@ public class TimeValidator implements Validator {
         }
 
         String timeInterval = (String) target;
+        if (timeInterval.length() != 11) {
+            errors.reject("", "Wrong time format");
+            return;
+        }
+
         try {
             int delimiter = timeInterval.indexOf('-');
             String startTimeString = timeInterval.substring(0, delimiter);

@@ -25,11 +25,11 @@ public class CreateCourierRequestValidator implements Validator {
 
     @Override
     public void validate(@Nullable Object target, @NonNull Errors errors) {
-        if (target == null) {
+        CreateCourierRequest createCourierRequest = (CreateCourierRequest) target;
+        if (createCourierRequest == null || createCourierRequest.getCouriers() == null) {
             errors.reject("", "Target is null");
             return;
         }
-        CreateCourierRequest createCourierRequest = (CreateCourierRequest) target;
         createCourierRequest.getCouriers().forEach(createCourierDto -> createCourierDtoValidator.validate(createCourierDto, errors));
     }
 }

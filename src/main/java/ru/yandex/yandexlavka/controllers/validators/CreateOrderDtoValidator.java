@@ -25,11 +25,11 @@ public class CreateOrderDtoValidator implements Validator {
 
     @Override
     public void validate(@Nullable Object target, @NonNull Errors errors) {
-        if (target == null) {
+        CreateOrderDto createOrderDto = ((CreateOrderDto) target);
+        if (createOrderDto == null || createOrderDto.getDeliveryHours() == null) {
             errors.reject("", "Target is null");
             return;
         }
-        CreateOrderDto createOrderDto = ((CreateOrderDto) target);
         createOrderDto.getDeliveryHours().forEach(s -> timeValidator.validate(s, errors));
     }
 }

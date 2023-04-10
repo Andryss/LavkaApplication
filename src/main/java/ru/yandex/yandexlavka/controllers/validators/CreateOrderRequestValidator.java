@@ -26,11 +26,11 @@ public class CreateOrderRequestValidator implements Validator {
 
     @Override
     public void validate(@Nullable Object target, @NonNull Errors errors) {
-        if (target == null) {
+        CreateOrderRequest createOrderRequest = (CreateOrderRequest) target;
+        if (createOrderRequest == null || createOrderRequest.getOrders() == null) {
             errors.reject("", "Target is null");
             return;
         }
-        CreateOrderRequest createOrderRequest = (CreateOrderRequest) target;
         createOrderRequest.getOrders().forEach(createCourierDto -> createOrderDtoValidator.validate(createCourierDto, errors));
     }
 }

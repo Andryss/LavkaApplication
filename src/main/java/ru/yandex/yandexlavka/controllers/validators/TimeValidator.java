@@ -1,18 +1,24 @@
 package ru.yandex.yandexlavka.controllers.validators;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import ru.yandex.yandexlavka.util.DateTimeParser;
 
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 @Component
 public class TimeValidator implements Validator {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+    private final DateTimeParser dateTimeParser;
+
+    @Autowired
+    public TimeValidator(DateTimeParser dateTimeParser) {
+        this.dateTimeParser = dateTimeParser;
+    }
 
     @Override
     public boolean supports(@NonNull Class<?> clazz) {
@@ -33,12 +39,13 @@ public class TimeValidator implements Validator {
         }
 
         try {
+            // TODO: add checks to avoid exception throwing
             int delimiter = timeInterval.indexOf('-');
             String startTimeString = timeInterval.substring(0, delimiter);
-            LocalTime startTime = LocalTime.parse(startTimeString, formatter);
+            LocalTime startTime = dateTimeParser.parseShortTime(startTimeString);
 
             String endTimeString = timeInterval.substring(delimiter + 1);
-            LocalTime endTime = LocalTime.parse(endTimeString, formatter);
+            LocalTime endTime = dateTimeParser.parseShortTime(endTimeString);
 
             if (startTime.isAfter(endTime)) {
                 errors.reject("", "End must be after start");

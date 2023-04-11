@@ -4,21 +4,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.yandexlavka.entities.IntervalEntity;
 import ru.yandex.yandexlavka.repositories.IntervalRepository;
+import ru.yandex.yandexlavka.util.DateTimeParser;
 
 import java.sql.Time;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Component
 public class IntervalMapper {
 
     private final IntervalRepository intervalRepository;
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    private final DateTimeParser dateTimeParser;
 
     @Autowired
-    public IntervalMapper(IntervalRepository intervalRepository) {
+    public IntervalMapper(IntervalRepository intervalRepository, DateTimeParser dateTimeParser) {
         this.intervalRepository = intervalRepository;
+        this.dateTimeParser = dateTimeParser;
     }
 
     public IntervalEntity mapIntervalEntity(String intervalString) {
@@ -32,14 +32,11 @@ public class IntervalMapper {
         IntervalEntity interval = new IntervalEntity();
         try {
             String startTimeString = intervalString.substring(0, timeDelimiter);
-            LocalTime startTimeParsed = LocalTime.parse(startTimeString, timeFormatter);
-            interval.setStartTime(Time.valueOf(startTimeParsed));
+            interval.setStartTime(Time.valueOf(dateTimeParser.parseShortTime(startTimeString)));
 
             String endTimeString = intervalString.substring(timeDelimiter + 1);
-            LocalTime endTimeParsed = LocalTime.parse(endTimeString, timeFormatter);
-            interval.setEndTime(Time.valueOf(endTimeParsed));
+            interval.setEndTime(Time.valueOf(dateTimeParser.parseShortTime(endTimeString)));
         } catch (Exception e) {
-            e.printStackTrace(); // TODO: delete print stack trace
             throw new IllegalArgumentException("Can't parse time " + intervalString);
         }
         return interval;
@@ -50,8 +47,8 @@ public class IntervalMapper {
     }
 
     private String createStringFormInterval(IntervalEntity intervalEntity) {
-        String startTimeString = timeFormatter.format(intervalEntity.getStartTime().toLocalTime());
-        String endTimeString = timeFormatter.format(intervalEntity.getEndTime().toLocalTime());
+        String startTimeString = dateTimeParser.shortTimeToString(intervalEntity.getStartTime().toLocalTime());
+        String endTimeString = dateTimeParser.shortTimeToString(intervalEntity.getEndTime().toLocalTime());
         return startTimeString + '-' + endTimeString;
     }
 

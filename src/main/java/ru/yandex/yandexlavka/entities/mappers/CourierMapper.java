@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.yandexlavka.entities.couriers.CourierDto;
 import ru.yandex.yandexlavka.entities.couriers.CourierEntity;
 import ru.yandex.yandexlavka.entities.couriers.CreateCourierDto;
+import ru.yandex.yandexlavka.entities.couriers.GetCourierMetaInfoResponse;
 
 @Component
 public class CourierMapper {
@@ -51,6 +52,17 @@ public class CourierMapper {
                 courierEntity.getCourierType(),
                 courierEntity.getRegions().stream().map(regionMapper::mapRegionNumber).toList(),
                 courierEntity.getWorkingHours().stream().map(intervalMapper::mapIntervalString).toList()
+        );
+    }
+
+    public GetCourierMetaInfoResponse mapCourierMetaInfoResponse(CourierEntity courierEntity) {
+        return new GetCourierMetaInfoResponse(
+                courierEntity.getCourierId(),
+                courierEntity.getCourierType(),
+                courierEntity.getRegions().stream().map(regionMapper::mapRegionNumber).toList(),
+                courierEntity.getWorkingHours().stream().map(intervalMapper::mapIntervalString).toList(),
+                null,
+                null
         );
     }
 

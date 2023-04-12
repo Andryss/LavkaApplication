@@ -33,18 +33,21 @@ public class TimeValidator implements Validator {
         }
 
         String timeInterval = (String) target;
-        if (timeInterval.length() != 11) {
+        int delimiter = timeInterval.indexOf('-');
+        if (timeInterval.length() != 11 || delimiter != 5) {
+            errors.reject("", "Wrong time format");
+            return;
+        }
+
+        String startTimeString = timeInterval.substring(0, delimiter);
+        String endTimeString = timeInterval.substring(delimiter + 1);
+        if (dateTimeParser.isInvalidShortTime(startTimeString) || dateTimeParser.isInvalidShortTime(endTimeString)) {
             errors.reject("", "Wrong time format");
             return;
         }
 
         try {
-            // TODO: add checks to avoid exception throwing
-            int delimiter = timeInterval.indexOf('-');
-            String startTimeString = timeInterval.substring(0, delimiter);
             LocalTime startTime = dateTimeParser.parseShortTime(startTimeString);
-
-            String endTimeString = timeInterval.substring(delimiter + 1);
             LocalTime endTime = dateTimeParser.parseShortTime(endTimeString);
 
             if (startTime.isAfter(endTime)) {

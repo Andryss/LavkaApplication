@@ -8,7 +8,7 @@ import ru.yandex.yandexlavka.entities.IntervalEntity;
 import ru.yandex.yandexlavka.entities.RegionEntity;
 import ru.yandex.yandexlavka.entities.couriers.CourierEntity;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -30,7 +30,8 @@ public class OrderEntity {
     Integer cost;
 
     @Column(name = "completed_time")
-    Date completedTime;
+    @Temporal(TemporalType.DATE)
+    LocalDate completedTime;
 
     @ManyToOne
     @JoinColumn(name = "assigned_courier_id")

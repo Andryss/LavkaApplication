@@ -6,7 +6,6 @@ import ru.yandex.yandexlavka.entities.IntervalEntity;
 import ru.yandex.yandexlavka.repositories.IntervalRepository;
 import ru.yandex.yandexlavka.util.DateTimeParser;
 
-import java.sql.Time;
 import java.util.Optional;
 
 @Component
@@ -32,10 +31,10 @@ public class IntervalMapper {
         IntervalEntity interval = new IntervalEntity();
         try {
             String startTimeString = intervalString.substring(0, timeDelimiter);
-            interval.setStartTime(Time.valueOf(dateTimeParser.parseShortTime(startTimeString)));
+            interval.setStartTime(dateTimeParser.parseShortTime(startTimeString));
 
             String endTimeString = intervalString.substring(timeDelimiter + 1);
-            interval.setEndTime(Time.valueOf(dateTimeParser.parseShortTime(endTimeString)));
+            interval.setEndTime(dateTimeParser.parseShortTime(endTimeString));
         } catch (Exception e) {
             throw new IllegalArgumentException("Can't parse time " + intervalString);
         }
@@ -47,8 +46,8 @@ public class IntervalMapper {
     }
 
     private String createStringFormInterval(IntervalEntity intervalEntity) {
-        String startTimeString = dateTimeParser.shortTimeToString(intervalEntity.getStartTime().toLocalTime());
-        String endTimeString = dateTimeParser.shortTimeToString(intervalEntity.getEndTime().toLocalTime());
+        String startTimeString = dateTimeParser.shortTimeToString(intervalEntity.getStartTime());
+        String endTimeString = dateTimeParser.shortTimeToString(intervalEntity.getEndTime());
         return startTimeString + '-' + endTimeString;
     }
 

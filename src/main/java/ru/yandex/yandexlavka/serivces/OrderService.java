@@ -12,10 +12,14 @@ import ru.yandex.yandexlavka.entities.orders.CreateOrderRequest;
 import ru.yandex.yandexlavka.entities.orders.OrderDto;
 import ru.yandex.yandexlavka.entities.orders.OrderEntity;
 import ru.yandex.yandexlavka.repositories.CourierRepository;
-import ru.yandex.yandexlavka.repositories.OrderRepository;
 import ru.yandex.yandexlavka.repositories.OffsetLimitPageable;
+import ru.yandex.yandexlavka.repositories.OrderRepository;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -74,7 +78,7 @@ public class OrderService {
             throw new BadRequestException();
 
         // Complete orders
-        Map<Long, Date> orderIdToCompletedTime = new HashMap<>(completeInfo.size());
+        Map<Long, LocalDate> orderIdToCompletedTime = new HashMap<>(completeInfo.size());
         completeInfo.forEach(completeOrder -> orderIdToCompletedTime.put(completeOrder.getOrderId(), completeOrder.getCompleteTime()));
 
         return fetchedOrderEntities.stream()

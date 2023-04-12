@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Time;
+import java.time.LocalTime;
 
 @Data
 @AllArgsConstructor
@@ -20,9 +20,9 @@ public class IntervalEntity {
 
     @Column(name = "start_time", nullable = false)
     @Temporal(TemporalType.TIME)
-    Time startTime;
+    LocalTime startTime;
 
     @Column(name = "end_time", nullable = false)
     @Temporal(TemporalType.TIME)
-    Time endTime;
+    LocalTime endTime;
 }

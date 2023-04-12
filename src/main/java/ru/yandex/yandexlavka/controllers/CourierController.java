@@ -2,21 +2,20 @@ package ru.yandex.yandexlavka.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.controllers.validators.CreateCourierRequestValidator;
-import ru.yandex.yandexlavka.entities.couriers.CreateCourierRequest;
-import ru.yandex.yandexlavka.entities.couriers.CourierDto;
-import ru.yandex.yandexlavka.entities.couriers.CreateCouriersResponse;
-import ru.yandex.yandexlavka.entities.couriers.GetCouriersResponse;
+import ru.yandex.yandexlavka.entities.couriers.*;
 import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
 import ru.yandex.yandexlavka.entities.exceptions.BadRequestResponse;
 import ru.yandex.yandexlavka.entities.exceptions.NotFoundException;
 import ru.yandex.yandexlavka.entities.exceptions.NotFoundResponse;
 import ru.yandex.yandexlavka.serivces.CourierService;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @RestController
@@ -46,7 +45,7 @@ public class CourierController {
 
     @GetMapping("/{courier_id}")
     ResponseEntity<CourierDto> getCourierById(
-            @PathVariable(name = "courier_id") Long courierId
+            @PathVariable("courier_id") Long courierId
     ) {
         Optional<CourierDto> courierById = courierService.getCourierById(courierId);
         if (courierById.isEmpty())
@@ -62,6 +61,18 @@ public class CourierController {
         if (offset < 0 || limit < 1)
             throw new BadRequestException();
         GetCouriersResponse response = courierService.getCourierRange(offset, limit);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/meta-info/{courier_id}")
+    ResponseEntity<GetCourierMetaInfoResponse> getCourierMetaInfo(
+            @PathVariable("courier_id") Long courierId,
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        if (!startDate.isBefore(endDate))
+            throw new BadRequestException();
+        GetCourierMetaInfoResponse response = courierService.getCourierMetaInfo(courierId, startDate, endDate);
         return ResponseEntity.ok(response);
     }
 

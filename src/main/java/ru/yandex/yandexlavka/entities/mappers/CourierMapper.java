@@ -30,8 +30,8 @@ public class CourierMapper {
         return new CourierEntity(
                 null,
                 createCourierDto.getCourierType(),
-                createCourierDto.getRegions().stream().map(regionMapper::mapRegionEntity).toList(),
-                createCourierDto.getWorkingHours().stream().map(intervalMapper::mapIntervalEntity).toList(),
+                regionMapper.mapRegionEntityList(createCourierDto.getRegions()),
+                intervalMapper.mapIntervalEntityList(createCourierDto.getWorkingHours()),
                 null
         );
     }
@@ -40,8 +40,8 @@ public class CourierMapper {
         return new CourierEntity(
                 courierDto.getCourierId(),
                 courierDto.getCourierType(),
-                courierDto.getRegions().stream().map(regionMapper::mapRegionEntity).toList(),
-                courierDto.getWorkingHours().stream().map(intervalMapper::mapIntervalEntity).toList(),
+                regionMapper.mapRegionEntityList(courierDto.getRegions()),
+                intervalMapper.mapIntervalEntityList(courierDto.getWorkingHours()),
                 null
         );
     }
@@ -50,8 +50,8 @@ public class CourierMapper {
         return new CourierDto(
                 courierEntity.getCourierId(),
                 courierEntity.getCourierType(),
-                courierEntity.getRegions().stream().map(regionMapper::mapRegionNumber).toList(),
-                courierEntity.getWorkingHours().stream().map(intervalMapper::mapIntervalString).toList()
+                regionMapper.mapRegionNumberList(courierEntity.getRegions()),
+                intervalMapper.mapIntervalStringList(courierEntity.getWorkingHours())
         );
     }
 
@@ -59,8 +59,8 @@ public class CourierMapper {
         return new GetCourierMetaInfoResponse(
                 courierEntity.getCourierId(),
                 courierEntity.getCourierType(),
-                courierEntity.getRegions().stream().map(regionMapper::mapRegionNumber).toList(),
-                courierEntity.getWorkingHours().stream().map(intervalMapper::mapIntervalString).toList(),
+                regionMapper.mapRegionNumberList(courierEntity.getRegions()),
+                intervalMapper.mapIntervalStringList(courierEntity.getWorkingHours()),
                 null,
                 null
         );

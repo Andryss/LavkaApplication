@@ -35,7 +35,7 @@ public class OrderMapper {
                 null,
                 null,
                 regionMapper.mapRegionEntity(createOrderDto.getRegions()),
-                createOrderDto.getDeliveryHours().stream().map(intervalMapper::mapIntervalEntity).toList()
+                intervalMapper.mapIntervalEntityList(createOrderDto.getDeliveryHours())
         );
     }
 
@@ -44,7 +44,7 @@ public class OrderMapper {
                 orderEntity.getOrderId(),
                 orderEntity.getWeight(),
                 regionMapper.mapRegionNumber(orderEntity.getRegions()),
-                orderEntity.getDeliveryHours().stream().map(intervalMapper::mapIntervalString).toList(),
+                intervalMapper.mapIntervalStringList(orderEntity.getDeliveryHours()),
                 orderEntity.getCost(),
                 orderEntity.getCompletedTime()
         );

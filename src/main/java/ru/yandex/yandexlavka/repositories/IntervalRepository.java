@@ -6,8 +6,10 @@ import ru.yandex.yandexlavka.entities.IntervalEntity;
 
 import java.time.LocalTime;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface IntervalRepository extends JpaRepository<IntervalEntity, Long> {
     Optional<IntervalEntity> findByStartTimeAndEndTime(LocalTime startTime, LocalTime endTime);
+    Set<IntervalEntity> findAllByStartTimeInAndEndTimeIn(Set<LocalTime> startTimeList, Set<LocalTime> endTimeList);
 }

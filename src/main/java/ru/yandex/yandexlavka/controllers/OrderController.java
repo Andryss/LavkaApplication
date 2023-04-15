@@ -1,19 +1,19 @@
 package ru.yandex.yandexlavka.controllers;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.controllers.validators.CreateOrderRequestValidator;
 import ru.yandex.yandexlavka.entities.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
+import ru.yandex.yandexlavka.entities.exceptions.NotFoundException;
 import ru.yandex.yandexlavka.entities.orders.CreateOrderRequest;
 import ru.yandex.yandexlavka.entities.orders.OrderDto;
-import ru.yandex.yandexlavka.entities.exceptions.BadRequestException;
-import ru.yandex.yandexlavka.entities.exceptions.BadRequestResponse;
-import ru.yandex.yandexlavka.entities.exceptions.NotFoundException;
-import ru.yandex.yandexlavka.entities.exceptions.NotFoundResponse;
 import ru.yandex.yandexlavka.serivces.OrderService;
 
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/orders")
+@Validated
 public class OrderController {
 
     private final CreateOrderRequestValidator createOrderRequestValidator;
@@ -56,11 +57,9 @@ public class OrderController {
 
     @GetMapping
     ResponseEntity<List<OrderDto>> getOrders(
-            @RequestParam(defaultValue = "0") Integer offset,
-            @RequestParam(defaultValue = "1") Integer limit
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer offset,
+            @RequestParam(defaultValue = "1") @Positive Integer limit
     ) {
-        if (offset < 0 || limit < 1)
-            throw new BadRequestException();
         List<OrderDto> response = orderService.getOrderRange(offset, limit);
         return ResponseEntity.ok(response);
     }
@@ -74,15 +73,5 @@ public class OrderController {
             throw new BadRequestException();
         List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
-    }
-
-    @ExceptionHandler({ BadRequestException.class })
-    ResponseEntity<BadRequestResponse> handleBadRequest() {
-        return ResponseEntity.badRequest().body(new BadRequestResponse());
-    }
-
-    @ExceptionHandler({ NotFoundException.class })
-    ResponseEntity<NotFoundResponse> handleNotFound() {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new NotFoundResponse());
     }
 }

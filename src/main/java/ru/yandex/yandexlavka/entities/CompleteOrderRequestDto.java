@@ -1,5 +1,7 @@
 package ru.yandex.yandexlavka.entities;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,5 +15,5 @@ import java.util.List;
 @NoArgsConstructor
 public class CompleteOrderRequestDto {
     @NotNull
-    List<CompleteOrder> completeInfo;
+    List<@Valid CompleteOrder> completeInfo;
 }

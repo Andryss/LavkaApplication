@@ -1,7 +1,7 @@
 package ru.yandex.yandexlavka.entities.orders;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateOrderRequest {
-    @NotNull
+    @NotEmpty
     List<@Valid CreateOrderDto> orders;
 }

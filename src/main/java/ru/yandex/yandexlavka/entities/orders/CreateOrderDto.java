@@ -1,5 +1,6 @@
 package ru.yandex.yandexlavka.entities.orders;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ public class CreateOrderDto {
     @NotNull
     Integer regions;
 
-    @NotNull
+    @NotEmpty
     List<String> deliveryHours;
 
     @NotNull

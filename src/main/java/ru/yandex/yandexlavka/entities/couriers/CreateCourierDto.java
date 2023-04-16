@@ -1,5 +1,6 @@
 package ru.yandex.yandexlavka.entities.couriers;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,9 +15,9 @@ public class CreateCourierDto {
     @NotNull
     CourierType courierType;
 
-    @NotNull
+    @NotEmpty
     List<Integer> regions;
 
-    @NotNull
+    @NotEmpty
     List<String> workingHours;
 }

@@ -17,8 +17,8 @@ public class OffsetLimitPageable implements Pageable {
         if (offset < 0)
             throw new IllegalArgumentException("Offset must not be less than zero!");
 
-        if (limit < 0)
-            throw new IllegalArgumentException("Limit must not be less than zero!");
+        if (limit < 1)
+            throw new IllegalArgumentException("Limit must be positive!");
 
         this.offset = offset;
         this.limit = limit;
@@ -26,29 +26,59 @@ public class OffsetLimitPageable implements Pageable {
     }
 
     @Override
-    public int getPageNumber() { return 0; }
+    public int getPageNumber() {
+        return 0;
+    }
 
     @Override
-    public int getPageSize() { return limit; }
+    public int getPageSize() {
+        return limit;
+    }
 
     @Override
-    public long getOffset() { return offset; }
+    public long getOffset() {
+        return offset;
+    }
 
     @Override
-    public Sort getSort() { return sort; }
+    public Sort getSort() {
+        return sort;
+    }
 
     @Override
-    public Pageable next() { return null; }
+    public Pageable next() {
+        return new OffsetLimitPageable(
+                (int)(getOffset() + getPageSize()), getPageSize(), getSort()
+        );
+    }
+
+    public OffsetLimitPageable previousOrThis() {
+        return hasPrevious() ? new OffsetLimitPageable(
+                (int)(getOffset() - getPageSize()), getPageSize(), getSort()
+        ) : this;
+    }
 
     @Override
-    public Pageable previousOrFirst() { return this; }
+    public Pageable previousOrFirst() {
+        return hasPrevious() ? previousOrThis() : first();
+    }
 
     @Override
-    public Pageable first() { return this; }
+    public Pageable first() {
+        return new OffsetLimitPageable(
+                0, getPageSize(), getSort()
+        );
+    }
 
     @Override
-    public Pageable withPage(int pageNumber) { return null; }
+    public Pageable withPage(int pageNumber) {
+        return new OffsetLimitPageable(
+                pageNumber * getPageSize(), getPageSize(), getSort()
+        );
+    }
 
     @Override
-    public boolean hasPrevious() { return false; }
+    public boolean hasPrevious() {
+        return offset > limit;
+    }
 }

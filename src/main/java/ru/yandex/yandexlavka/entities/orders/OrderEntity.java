@@ -33,15 +33,15 @@ public class OrderEntity {
     @Temporal(TemporalType.DATE)
     LocalDate completedTime;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_courier_id")
     CourierEntity assignedCourierId;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "regions")
     RegionEntity regions;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
     @JoinTable(
             name = "orders_delivery_hours",
             joinColumns = { @JoinColumn(name = "interval_id") },

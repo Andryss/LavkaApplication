@@ -27,7 +27,7 @@ public class CourierEntity {
     @Enumerated(value = EnumType.STRING)
     CourierType courierType;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "couriers_regions",
             joinColumns = { @JoinColumn(name = "courier_id") },
@@ -35,7 +35,7 @@ public class CourierEntity {
     )
     List<RegionEntity> regions;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
     @JoinTable(
             name = "couriers_working_hours",
             joinColumns = { @JoinColumn(name = "courier_id") },
@@ -43,6 +43,6 @@ public class CourierEntity {
     )
     List<IntervalEntity> workingHours;
 
-    @OneToMany(mappedBy = "assignedCourierId")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "assignedCourierId")
     List<OrderEntity> assignedOrders;
 }

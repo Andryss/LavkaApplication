@@ -40,7 +40,7 @@ public class OrderController {
     ) {
         createOrderRequestValidator.validate(createOrderRequest, bindingResult);
         if (bindingResult.hasErrors())
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
         List<OrderDto> response = orderService.addOrders(createOrderRequest);
         return ResponseEntity.ok(response);
     }
@@ -51,7 +51,7 @@ public class OrderController {
     ) {
         Optional<OrderDto> orderById = orderService.getOrderById(orderId);
         if (orderById.isEmpty())
-            throw new NotFoundException();
+            throw NotFoundException.EMPTY;
         return ResponseEntity.ok(orderById.get());
     }
 
@@ -70,7 +70,7 @@ public class OrderController {
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors())
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
         List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
     }

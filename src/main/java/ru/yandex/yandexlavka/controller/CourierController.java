@@ -43,7 +43,7 @@ public class CourierController {
     ) {
         createCourierRequestValidator.validate(createCourierRequest, bindingResult);
         if (bindingResult.hasErrors())
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
         CreateCouriersResponse response = courierService.addCouriers(createCourierRequest);
         return ResponseEntity.ok(response);
     }
@@ -54,7 +54,7 @@ public class CourierController {
     ) {
         Optional<CourierDto> courierById = courierService.getCourierById(courierId);
         if (courierById.isEmpty())
-            throw new NotFoundException();
+            throw NotFoundException.EMPTY;
         return ResponseEntity.ok(courierById.get());
     }
 
@@ -74,7 +74,7 @@ public class CourierController {
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         if (!startDate.isBefore(endDate))
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
         GetCourierMetaInfoResponse response = courierService.getCourierMetaInfo(courierId, startDate, endDate);
         return ResponseEntity.ok(response);
     }

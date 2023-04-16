@@ -61,21 +61,21 @@ public class OrderService {
         // Check if no order has completed more than 1 time
         List<Long> orderIdList = completeInfo.stream().map(CompleteOrder::getOrderId).distinct().toList();
         if (orderIdList.size() != completeInfo.size())
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
 
         // Check if all couriers exist
         List<Long> courierIdList = completeInfo.stream().map(CompleteOrder::getCourierId).distinct().toList();
         List<CourierEntity> fetchedCourierEntities = courierRepository.findAllByCourierIdIn(courierIdList);
         if (fetchedCourierEntities.size() != courierIdList.size())
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
 
         // Check if all orders exist
         List<OrderEntity> fetchedOrderEntities = orderRepository.findAllByOrderIdIn(orderIdList);
         if (fetchedOrderEntities.size() != orderIdList.size())
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
         // Check if all orders can be completed
         if (fetchedOrderEntities.stream().anyMatch(orderEntity -> orderEntity.getAssignedCourierId() == null || orderEntity.getCompletedTime() != null))
-            throw new BadRequestException();
+            throw BadRequestException.EMPTY;
 
         // Complete orders
         Map<Long, LocalDate> orderIdToCompletedTime = new HashMap<>(completeInfo.size());

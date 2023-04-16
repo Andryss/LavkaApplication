@@ -2,6 +2,8 @@ package ru.yandex.yandexlavka.exception;
 
 public class BadRequestException extends RuntimeException {
 
+    public static final BadRequestException EMPTY = new BadRequestException();
+
     public BadRequestException() {
         this((String) null);
     }

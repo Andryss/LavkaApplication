@@ -2,6 +2,8 @@ package ru.yandex.yandexlavka.exception;
 
 public class NotFoundException extends RuntimeException {
 
+    public static final NotFoundException EMPTY = new NotFoundException();
+
     public NotFoundException() {
         this((String) null);
     }

@@ -1,9 +1,9 @@
 package ru.yandex.yandexlavka.objects.mapping.assign.order;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class OrderAssignResponse {
-    Date date;
+    LocalDate date;
     List<CouriersGroupOrders> couriers;
 }

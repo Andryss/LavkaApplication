@@ -3,19 +3,19 @@ package ru.yandex.yandexlavka.serivce;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
-import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.exception.BadRequestException;
+import ru.yandex.yandexlavka.objects.dto.OrderDto;
+import ru.yandex.yandexlavka.objects.entity.CourierEntity;
+import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 import ru.yandex.yandexlavka.objects.mapper.OrderMapper;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
-import ru.yandex.yandexlavka.objects.dto.OrderDto;
-import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.OffsetLimitPageable;
 import ru.yandex.yandexlavka.repository.OrderRepository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +78,7 @@ public class OrderService {
             throw BadRequestException.EMPTY;
 
         // Complete orders
-        Map<Long, LocalDate> orderIdToCompletedTime = new HashMap<>(completeInfo.size());
+        Map<Long, LocalDateTime> orderIdToCompletedTime = new HashMap<>(completeInfo.size());
         completeInfo.forEach(completeOrder -> orderIdToCompletedTime.put(completeOrder.getOrderId(), completeOrder.getCompleteTime()));
 
         return fetchedOrderEntities.stream()

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -27,8 +27,8 @@ public class OrderEntity {
     Integer cost;
 
     @Column(name = "completed_time")
-    @Temporal(TemporalType.DATE)
-    LocalDate completedTime;
+    @Temporal(TemporalType.TIMESTAMP)
+    LocalDateTime completedTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_courier_id")

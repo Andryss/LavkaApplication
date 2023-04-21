@@ -2,6 +2,7 @@ package ru.yandex.yandexlavka.objects.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.yandexlavka.objects.entity.RegionEntity;
 import ru.yandex.yandexlavka.repository.RegionRepository;
 
@@ -23,11 +24,13 @@ public class RegionMapper {
         this.regionRepository = regionRepository;
     }
 
+    @Transactional
     public RegionEntity mapRegionEntity(Integer regionNumber){
         Optional<RegionEntity> entityFromRepository = regionRepository.findByRegionNumber(regionNumber);
         return entityFromRepository.orElseGet(() -> regionRepository.save(createRegionFromRegionNumber(regionNumber)));
     }
 
+    @Transactional
     public List<RegionEntity> mapRegionEntityList(List<Integer> regionNumberList) {
         // Fetch region entities with region number in given list (and transform into region to entity map)
         Map<Integer, RegionEntity> regionEntitiesFromRepository = regionRepository.findAllByRegionNumberIn(regionNumberList).stream()

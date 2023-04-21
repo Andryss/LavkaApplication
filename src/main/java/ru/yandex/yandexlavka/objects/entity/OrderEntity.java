@@ -31,14 +31,14 @@ public class OrderEntity {
     LocalDateTime completedTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_courier_id")
-    CourierEntity assignedCourierId;
+    @JoinColumn(name = "assigned_group_order_id")
+    GroupOrdersEntity assignedGroupOrder;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "regions")
     RegionEntity regions;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "orders_delivery_hours",
             joinColumns = { @JoinColumn(name = "interval_id") },

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import ru.yandex.yandexlavka.objects.dto.CourierType;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -25,7 +26,7 @@ public class CourierEntity {
     @Enumerated(value = EnumType.STRING)
     CourierType courierType;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "couriers_regions",
             joinColumns = { @JoinColumn(name = "courier_id") },
@@ -33,7 +34,7 @@ public class CourierEntity {
     )
     List<RegionEntity> regions;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "couriers_working_hours",
             joinColumns = { @JoinColumn(name = "courier_id") },
@@ -41,6 +42,6 @@ public class CourierEntity {
     )
     List<IntervalEntity> workingHours;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "assignedCourierId")
-    List<OrderEntity> assignedOrders;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "assignedCourier")
+    Set<GroupOrdersEntity> assignedGroupOrders;
 }

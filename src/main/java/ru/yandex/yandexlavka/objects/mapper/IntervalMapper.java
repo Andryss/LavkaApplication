@@ -2,6 +2,7 @@ package ru.yandex.yandexlavka.objects.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.yandexlavka.objects.entity.IntervalEntity;
 import ru.yandex.yandexlavka.repository.IntervalRepository;
 import ru.yandex.yandexlavka.util.DateTimeParser;
@@ -23,12 +24,14 @@ public class IntervalMapper {
         this.dateTimeParser = dateTimeParser;
     }
 
+    @Transactional
     public IntervalEntity mapIntervalEntity(String intervalString) {
         IntervalEntity intervalFromString = createIntervalFromString(intervalString);
         Optional<IntervalEntity> intervalFromRepository = intervalRepository.findByStartTimeAndEndTime(intervalFromString.getStartTime(), intervalFromString.getEndTime());
         return intervalFromRepository.orElseGet(() -> intervalRepository.save(intervalFromString));
     }
 
+    @Transactional
     public List<IntervalEntity> mapIntervalEntityList(List<String> intervalStringList) {
         // Map strings to entities and extract sets of start and end time for database query
         List<IntervalEntity> intervalEntities = intervalStringList.stream().map(this::createIntervalFromString).toList();

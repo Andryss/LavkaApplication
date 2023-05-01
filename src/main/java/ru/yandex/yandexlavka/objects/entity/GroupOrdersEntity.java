@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,10 +18,6 @@ public class GroupOrdersEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "group_id")
     Long groupId;
-
-    @Column(name = "complete_time", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    LocalDateTime completeTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_courier_id")

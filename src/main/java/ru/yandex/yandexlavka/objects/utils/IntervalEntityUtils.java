@@ -2,6 +2,8 @@ package ru.yandex.yandexlavka.objects.utils;
 
 import ru.yandex.yandexlavka.objects.entity.IntervalEntity;
 
+import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static java.util.Comparator.comparing;
@@ -21,5 +23,26 @@ public class IntervalEntityUtils {
                 return true;
         }
         return false;
+    }
+
+    public static boolean hasIntersectionsBetween(List<IntervalEntity> intervalList1, List<IntervalEntity> intervalList2) {
+        intervalList1.sort(Comparator.comparing(IntervalEntity::getStartTime));
+        intervalList2.sort(Comparator.comparing(IntervalEntity::getStartTime));
+        int i1 = 0, i2 = 0;
+        while (i1 < intervalList1.size() && i2 < intervalList2.size()) {
+            IntervalEntity interval1 = intervalList1.get(i1), interval2 = intervalList2.get(i2);
+            if (isIntersecting(interval1, interval2)) return true;
+            if (interval1.getStartTime().compareTo(interval2.getStartTime()) > 0) i2++;
+            else i1++;
+        }
+        return false;
+    }
+
+    public static boolean isInsideInterval(LocalTime time, IntervalEntity interval) {
+        return !time.isBefore(interval.getStartTime()) && !time.isAfter(interval.getEndTime());
+    }
+
+    public static boolean isInsideAnyInterval(LocalTime time, List<IntervalEntity> intervalList) {
+        return intervalList.stream().anyMatch(interval -> isInsideInterval(time, interval));
     }
 }

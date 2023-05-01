@@ -8,11 +8,11 @@ import ru.yandex.yandexlavka.exception.BadRequestException;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
-import ru.yandex.yandexlavka.objects.utils.mapper.OrderMapper;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.utils.mapper.OrderMapper;
 import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.OffsetLimitPageable;
 import ru.yandex.yandexlavka.repository.OrderRepository;
@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.yandex.yandexlavka.objects.utils.IntervalEntityUtils.hasIntersections;
+import static ru.yandex.yandexlavka.objects.utils.IntervalEntityUtils.isInsideAnyInterval;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -118,10 +119,26 @@ public class OrderServiceImpl implements OrderService {
                 throw BadRequestException.EMPTY;
         });
 
-        // Complete orders
+        // Check if all orders/couriers has right deliveryTime/workingHours
         Map<Long, LocalDateTime> orderIdToCompletedTime = new HashMap<>(completeInfo.size());
-        completeInfo.forEach(completeOrder -> orderIdToCompletedTime.put(completeOrder.getOrderId(), completeOrder.getCompleteTime()));
+        Map<Long, LocalDateTime> courierIdToCompletedTime = new HashMap<>(completeInfo.size());
+        completeInfo.forEach(completeOrder -> {
+            orderIdToCompletedTime.put(completeOrder.getOrderId(), completeOrder.getCompleteTime());
+            courierIdToCompletedTime.put(completeOrder.getCourierId(), completeOrder.getCompleteTime());
+        });
 
+        fetchedOrderEntities.forEach(fetchedOrderEntity -> {
+            LocalDateTime completedTime = orderIdToCompletedTime.get(fetchedOrderEntity.getOrderId());
+            if (!isInsideAnyInterval(completedTime.toLocalTime(), fetchedOrderEntity.getDeliveryHours()))
+                throw BadRequestException.EMPTY;
+        });
+        fetchedCourierEntities.forEach(fetchedCourierEntity -> {
+            LocalDateTime completedTime = courierIdToCompletedTime.get(fetchedCourierEntity.getCourierId());
+            if (!isInsideAnyInterval(completedTime.toLocalTime(), fetchedCourierEntity.getWorkingHours()))
+                throw BadRequestException.EMPTY;
+        });
+
+        // Complete orders
         return fetchedOrderEntities.stream()
                 .peek(orderEntity -> orderEntity.setCompletedTime(orderIdToCompletedTime.get(orderEntity.getOrderId())))
                 .map(orderMapper::mapOrderDto)

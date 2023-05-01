@@ -35,7 +35,7 @@ public class OrderEntity {
     GroupOrdersEntity assignedGroupOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "regions")
+    @JoinColumn(name = "region_id")
     RegionEntity regions;
 
     @ManyToMany(fetch = FetchType.LAZY)

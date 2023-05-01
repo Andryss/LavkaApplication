@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.yandex.yandexlavka.objects.utils.IntervalEntityUtils.hasIntersections;
+
 @Service
 public class CourierServiceImpl implements CourierService {
 
@@ -57,11 +59,17 @@ public class CourierServiceImpl implements CourierService {
     public CreateCouriersResponse addCouriers(CreateCourierRequest request) {
         List<CourierEntity> courierEntitiesToSave = request.getCouriers().stream()
                 .map(courierMapper::mapCourierEntity)
+                .peek(this::courierEntityHasNoIntersectingIntervals)
                 .toList();
         List<CourierDto> response = courierRepository.saveAll(courierEntitiesToSave).stream()
                 .map(courierMapper::mapCourierDto)
                 .toList();
         return new CreateCouriersResponse(response);
+    }
+
+    private void courierEntityHasNoIntersectingIntervals(CourierEntity courierEntity) {
+        if (hasIntersections(courierEntity.getWorkingHours()))
+            throw BadRequestException.EMPTY;
     }
 
     @Override

@@ -24,6 +24,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.yandex.yandexlavka.objects.utils.IntervalEntityUtils.hasIntersections;
+
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -46,10 +48,16 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderDto> addOrders(CreateOrderRequest request) {
         List<OrderEntity> orderEntitiesToSave = request.getOrders().stream()
                 .map(orderMapper::mapOrderEntity)
+                .peek(this::courierEntityHasNoIntersectingIntervals)
                 .toList();
         return orderRepository.saveAll(orderEntitiesToSave).stream()
                 .map(orderMapper::mapOrderDto)
                 .toList();
+    }
+
+    private void courierEntityHasNoIntersectingIntervals(OrderEntity orderEntity) {
+        if (hasIntersections(orderEntity.getDeliveryHours()))
+            throw BadRequestException.EMPTY;
     }
 
     @Override

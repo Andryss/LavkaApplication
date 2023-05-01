@@ -6,11 +6,11 @@ import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 @Component
 public class MaxOrdersWeightResolverImpl implements MaxOrdersWeightResolver {
     @Override
-    public int resolve(CourierEntity courierEntity) {
+    public float resolve(CourierEntity courierEntity) {
         return switch (courierEntity.getCourierType()){
-            case FOOT -> 10;
-            case BIKE -> 20;
-            case AUTO -> 40;
+            case FOOT -> 10.0f;
+            case BIKE -> 20.0f;
+            case AUTO -> 40.0f;
         };
     }
 }

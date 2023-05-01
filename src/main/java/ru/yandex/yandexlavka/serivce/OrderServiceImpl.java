@@ -9,14 +9,16 @@ import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 import ru.yandex.yandexlavka.objects.mapper.OrderMapper;
-import ru.yandex.yandexlavka.objects.mapper.OrderMapperImpl;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.OffsetLimitPageable;
 import ru.yandex.yandexlavka.repository.OrderRepository;
+import ru.yandex.yandexlavka.serivce.assignment.OrderAssignService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,11 +30,14 @@ public class OrderServiceImpl implements OrderService {
     private final CourierRepository courierRepository;
     private final OrderMapper orderMapper;
 
+    private final OrderAssignService orderAssignService;
+
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, CourierRepository courierRepository, OrderMapper orderMapper) {
+    public OrderServiceImpl(OrderRepository orderRepository, CourierRepository courierRepository, OrderMapper orderMapper, OrderAssignService orderAssignService) {
         this.orderRepository = orderRepository;
         this.courierRepository = courierRepository;
         this.orderMapper = orderMapper;
+        this.orderAssignService = orderAssignService;
     }
 
     @Transactional
@@ -108,5 +113,10 @@ public class OrderServiceImpl implements OrderService {
                 .peek(orderEntity -> orderEntity.setCompletedTime(orderIdToCompletedTime.get(orderEntity.getOrderId())))
                 .map(orderMapper::mapOrderDto)
                 .toList();
+    }
+
+    @Override
+    public List<OrderAssignResponse> assignOrders(LocalDate date) {
+        return orderAssignService.assignOrders(date);
     }
 }

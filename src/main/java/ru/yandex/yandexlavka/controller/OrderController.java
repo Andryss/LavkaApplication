@@ -4,14 +4,18 @@ package ru.yandex.yandexlavka.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @RequestMapping("/orders")
@@ -39,6 +43,11 @@ public interface OrderController {
     ResponseEntity<List<OrderDto>> completeOrder( // FIXME: why not "CompleteOrdersResponse"?
             @RequestBody @Valid CompleteOrderRequestDto completeOrderRequestDto,
             BindingResult bindingResult
+    );
+
+    @PostMapping("/assign")
+    ResponseEntity<List<OrderAssignResponse>> ordersAssign( // FIXME: why List<>? Singleton list :)
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     );
 
 }

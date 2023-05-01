@@ -8,10 +8,12 @@ import ru.yandex.yandexlavka.controller.validator.CreateOrderRequestValidator;
 import ru.yandex.yandexlavka.exception.BadRequestException;
 import ru.yandex.yandexlavka.exception.NotFoundException;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 import ru.yandex.yandexlavka.serivce.OrderService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,5 +69,12 @@ public class OrderControllerImpl implements OrderController {
             throw BadRequestException.EMPTY;
         List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<List<OrderAssignResponse>> ordersAssign(LocalDate date) {
+        if (date == null) date = LocalDate.now();
+        List<OrderAssignResponse> responses = orderService.assignOrders(date);
+        return ResponseEntity.ok(responses);
     }
 }

@@ -8,7 +8,7 @@ import ru.yandex.yandexlavka.exception.BadRequestException;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
-import ru.yandex.yandexlavka.objects.mapper.OrderMapper;
+import ru.yandex.yandexlavka.objects.utils.mapper.OrderMapper;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;

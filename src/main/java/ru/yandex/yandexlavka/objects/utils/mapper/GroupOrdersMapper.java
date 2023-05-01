@@ -1,4 +1,4 @@
-package ru.yandex.yandexlavka.objects.mapper;
+package ru.yandex.yandexlavka.objects.utils.mapper;
 
 import ru.yandex.yandexlavka.objects.entity.GroupOrdersEntity;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.GroupOrders;

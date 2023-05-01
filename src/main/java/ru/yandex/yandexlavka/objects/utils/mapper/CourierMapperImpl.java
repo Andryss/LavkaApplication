@@ -1,4 +1,4 @@
-package ru.yandex.yandexlavka.objects.mapper;
+package ru.yandex.yandexlavka.objects.utils.mapper;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.yandexlavka.objects.dto.CourierDto;

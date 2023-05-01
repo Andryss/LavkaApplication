@@ -1,4 +1,4 @@
-package ru.yandex.yandexlavka.objects.mapper;
+package ru.yandex.yandexlavka.objects.utils.mapper;
 
 import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;

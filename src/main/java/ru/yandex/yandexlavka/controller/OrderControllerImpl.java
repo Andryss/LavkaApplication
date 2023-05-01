@@ -1,6 +1,8 @@
 package ru.yandex.yandexlavka.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,6 +77,6 @@ public class OrderControllerImpl implements OrderController {
     public ResponseEntity<List<OrderAssignResponse>> ordersAssign(LocalDate date) {
         if (date == null) date = LocalDate.now();
         List<OrderAssignResponse> responses = orderService.assignOrders(date);
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
 }

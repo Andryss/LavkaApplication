@@ -9,8 +9,6 @@ import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.GroupOrdersEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
-import ru.yandex.yandexlavka.objects.utils.mapper.CourierMapper;
-import ru.yandex.yandexlavka.objects.utils.mapper.GroupOrdersMapper;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.CouriersGroupOrders;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.GroupOrders;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
@@ -18,10 +16,11 @@ import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMetaInfoResponse;
+import ru.yandex.yandexlavka.objects.utils.mapper.CourierMapper;
+import ru.yandex.yandexlavka.objects.utils.mapper.GroupOrdersMapper;
 import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.GroupOrderRepository;
 import ru.yandex.yandexlavka.repository.OffsetLimitPageable;
-import ru.yandex.yandexlavka.repository.OrderRepository;
 import ru.yandex.yandexlavka.serivce.rating.CourierRatingService;
 import ru.yandex.yandexlavka.serivce.rating.CourierRatingService.CourierMetaInfo;
 
@@ -38,17 +37,15 @@ public class CourierServiceImpl implements CourierService {
     private final CourierRatingService courierRatingService;
 
     private final CourierRepository courierRepository;
-    private final OrderRepository orderRepository;
     private final GroupOrderRepository groupOrderRepository;
     private final GroupOrdersMapper groupOrdersMapper;
 
     private final CourierMapper courierMapper;
 
     @Autowired
-    public CourierServiceImpl(CourierRatingService courierRatingService, CourierRepository courierRepository, OrderRepository orderRepository, GroupOrderRepository groupOrderRepository, GroupOrdersMapper groupOrdersMapper, CourierMapper courierMapper) {
+    public CourierServiceImpl(CourierRatingService courierRatingService, CourierRepository courierRepository, GroupOrderRepository groupOrderRepository, GroupOrdersMapper groupOrdersMapper, CourierMapper courierMapper) {
         this.courierRatingService = courierRatingService;
         this.courierRepository = courierRepository;
-        this.orderRepository = orderRepository;
         this.groupOrderRepository = groupOrderRepository;
         this.groupOrdersMapper = groupOrdersMapper;
         this.courierMapper = courierMapper;
@@ -102,12 +99,12 @@ public class CourierServiceImpl implements CourierService {
         // Check if courier exists
         CourierEntity courierEntity = getCourierEntityById(courierId);
 
-        // Fetch completed group orders
-        List<GroupOrdersEntity> completedGroupOrders = groupOrderRepository.findAllByAssignedCourierAndCompleteTimeGreaterThanEqualAndCompleteTimeLessThan(
-                courierEntity, startDate.atStartOfDay(), endDate.atStartOfDay()
-        );
         // Fetch completed orders
-        List<OrderEntity> completedOrders = orderRepository.findAllByAssignedGroupOrderIn(completedGroupOrders);
+        List<OrderEntity> completedOrders = courierEntity.getAssignedGroupOrders().stream()
+                .flatMap(groupOrders -> groupOrders.getOrders().stream())
+                .filter(orderEntity -> orderEntity.getCompletedTime() != null)
+                .filter(orderEntity -> !orderEntity.getCompletedTime().isBefore(startDate.atStartOfDay()) && orderEntity.getCompletedTime().isBefore(endDate.atStartOfDay()))
+                .toList();
 
         GetCourierMetaInfoResponse response = courierMapper.mapCourierMetaInfoResponse(courierEntity);
 
@@ -130,10 +127,8 @@ public class CourierServiceImpl implements CourierService {
         CourierEntity courierEntity = getCourierEntityById(courierId);
 
         // Get assigned group orders
-        List<GroupOrdersEntity> assignedGroupOrdersEntities = groupOrderRepository.findAllByAssignedCourierAndCompleteTimeGreaterThanEqualAndCompleteTimeLessThan(
-                courierEntity,
-                date.atStartOfDay(),
-                date.plusDays(1).atStartOfDay()
+        List<GroupOrdersEntity> assignedGroupOrdersEntities = groupOrderRepository.findAllByAssignedCourierAndAssignedDateGreaterThanEqualAndAssignedDateLessThan(
+                courierEntity, date, date.plusDays(1)
         );
 
         List<GroupOrders> assignedGroupOrders = groupOrdersMapper.mapGroupOrdersList(assignedGroupOrdersEntities);

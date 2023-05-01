@@ -7,6 +7,7 @@ import ru.yandex.yandexlavka.objects.entity.GroupOrdersEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 @Repository
@@ -16,4 +17,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Transactional(readOnly = true)
     List<OrderEntity> findAllByAssignedGroupOrderIn(Collection<GroupOrdersEntity> groupOrdersEntities);
+
+    @Transactional(readOnly = true)
+    HashSet<OrderEntity> findAllByAssignedGroupOrderNull();
 }

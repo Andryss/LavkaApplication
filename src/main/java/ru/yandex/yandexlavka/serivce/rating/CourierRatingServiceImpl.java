@@ -22,6 +22,7 @@ public class CourierRatingServiceImpl implements CourierRatingService {
         this.ratingCalculator = ratingCalculator;
     }
 
+    @Override
     public CourierMetaInfo getCourierMetaInfo(CourierEntity courier, LocalDate startDate, LocalDate endDate, List<OrderEntity> completedOrders) {
         return new CourierMetaInfo(
                 ratingCalculator.calculate(courier, startDate, endDate, completedOrders),

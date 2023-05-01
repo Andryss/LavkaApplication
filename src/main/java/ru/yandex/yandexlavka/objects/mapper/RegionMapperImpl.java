@@ -24,12 +24,14 @@ public class RegionMapperImpl implements RegionMapper {
         this.regionRepository = regionRepository;
     }
 
+    @Override
     @Transactional
     public RegionEntity mapRegionEntity(Integer regionNumber) {
         Optional<RegionEntity> entityFromRepository = regionRepository.findByRegionNumber(regionNumber);
         return entityFromRepository.orElseGet(() -> regionRepository.save(createRegionFromRegionNumber(regionNumber)));
     }
 
+    @Override
     @Transactional
     public List<RegionEntity> mapRegionEntityList(List<Integer> regionNumberList) {
         // Fetch region entities with region number in given list (and transform into region to entity map)
@@ -58,10 +60,12 @@ public class RegionMapperImpl implements RegionMapper {
         );
     }
 
+    @Override
     public Integer mapRegionNumber(RegionEntity regionEntity) {
         return createRegionNumberFromRegion(regionEntity);
     }
 
+    @Override
     public List<Integer> mapRegionNumberList(List<RegionEntity> regionEntityList) {
         return regionEntityList.stream().map(this::mapRegionNumber).toList();
     }

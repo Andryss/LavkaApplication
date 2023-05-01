@@ -10,6 +10,7 @@ import ru.yandex.yandexlavka.controller.validator.CreateCourierRequestValidator;
 import ru.yandex.yandexlavka.exception.BadRequestException;
 import ru.yandex.yandexlavka.exception.NotFoundException;
 import ru.yandex.yandexlavka.objects.dto.CourierDto;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
@@ -71,6 +72,16 @@ public class CourierControllerImpl implements CourierController {
         if (!startDate.isBefore(endDate))
             throw BadRequestException.EMPTY;
         GetCourierMetaInfoResponse response = courierService.getCourierMetaInfo(courierId, startDate, endDate);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<OrderAssignResponse> couriersAssignments(
+            LocalDate date,
+            Long courierId
+    ) {
+        if (date == null) date = LocalDate.now();
+        OrderAssignResponse response = courierService.getCouriersAssignments(date, courierId);
         return ResponseEntity.ok(response);
     }
 }

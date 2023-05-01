@@ -24,6 +24,7 @@ public class IntervalMapperImpl implements IntervalMapper {
         this.dateTimeParser = dateTimeParser;
     }
 
+    @Override
     @Transactional
     public IntervalEntity mapIntervalEntity(String intervalString) {
         IntervalEntity intervalFromString = createIntervalFromString(intervalString);
@@ -31,6 +32,7 @@ public class IntervalMapperImpl implements IntervalMapper {
         return intervalFromRepository.orElseGet(() -> intervalRepository.save(intervalFromString));
     }
 
+    @Override
     @Transactional
     public List<IntervalEntity> mapIntervalEntityList(List<String> intervalStringList) {
         // Map strings to entities and extract sets of start and end time for database query
@@ -82,10 +84,12 @@ public class IntervalMapperImpl implements IntervalMapper {
         return interval;
     }
 
+    @Override
     public String mapIntervalString(IntervalEntity intervalEntity) {
         return createStringFormInterval(intervalEntity);
     }
 
+    @Override
     public List<String> mapIntervalStringList(List<IntervalEntity> intervalEntityList) {
         return intervalEntityList.stream().map(this::mapIntervalString).toList();
     }

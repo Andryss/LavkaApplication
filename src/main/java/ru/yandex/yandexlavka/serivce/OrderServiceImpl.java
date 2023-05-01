@@ -17,6 +17,7 @@ import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.OffsetLimitPageable;
 import ru.yandex.yandexlavka.repository.OrderRepository;
 import ru.yandex.yandexlavka.serivce.assignment.OrderAssignService;
+import ru.yandex.yandexlavka.serivce.assignment.OrderAssignService.AssignedOrdersInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderAssignService = orderAssignService;
     }
 
+    @Override
     @Transactional
     public List<OrderDto> addOrders(CreateOrderRequest request) {
         List<OrderEntity> orderEntitiesToSave = request.getOrders().stream()
@@ -50,11 +52,13 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Optional<OrderDto> getOrderById(Long orderId) {
         return orderRepository.findById(orderId).map(orderMapper::mapOrderDto);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<OrderDto> getOrderRange(Integer offset, Integer limit) {
         Page<OrderEntity> orderEntityPage = orderRepository.findAll(OffsetLimitPageable.of(offset, limit));
@@ -63,6 +67,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    @Override
     @Transactional
     public List<OrderDto> completeOrders(CompleteOrderRequestDto completeOrderRequestDto) {
         List<CompleteOrder> completeInfo = completeOrderRequestDto.getCompleteInfo();
@@ -117,6 +122,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderAssignResponse> assignOrders(LocalDate date) {
-        return orderAssignService.assignOrders(date);
+        AssignedOrdersInfo assignedOrdersInfo = orderAssignService.assignOrders(date);
+        OrderAssignResponse response = new OrderAssignResponse(
+                date.toString(),
+                assignedOrdersInfo.getAssignedCouriersGroupOrders()
+        );
+        return Collections.singletonList(response);
     }
 }

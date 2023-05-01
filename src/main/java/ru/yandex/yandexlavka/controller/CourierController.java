@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.objects.dto.CourierDto;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
@@ -42,6 +43,12 @@ public interface CourierController {
             @PathVariable("courier_id") Long courierId,
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, // FIXME: why not "start_date"?
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate // FIXME: why not "end_date"?
+    );
+
+    @GetMapping("/assignments")
+    ResponseEntity<OrderAssignResponse> couriersAssignments(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam("courier_id") Long courierId
     );
 
 }

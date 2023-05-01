@@ -17,6 +17,7 @@ public class CourierMapperImpl implements CourierMapper {
         this.regionMapper = regionMapper;
     }
 
+    @Override
     public CourierEntity mapCourierEntity(CreateCourierDto createCourierDto) {
         return new CourierEntity(
                 null,
@@ -27,6 +28,7 @@ public class CourierMapperImpl implements CourierMapper {
         );
     }
 
+    @Override
     public CourierDto mapCourierDto(CourierEntity courierEntity) {
         return new CourierDto(
                 courierEntity.getCourierId(),
@@ -36,6 +38,7 @@ public class CourierMapperImpl implements CourierMapper {
         );
     }
 
+    @Override
     public GetCourierMetaInfoResponse mapCourierMetaInfoResponse(CourierEntity courierEntity) {
         return new GetCourierMetaInfoResponse(
                 courierEntity.getCourierId(),

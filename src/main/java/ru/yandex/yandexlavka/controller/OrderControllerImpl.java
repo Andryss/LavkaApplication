@@ -74,7 +74,9 @@ public class OrderControllerImpl implements OrderController {
     }
 
     @Override
-    public ResponseEntity<List<OrderAssignResponse>> ordersAssign(LocalDate date) {
+    public ResponseEntity<List<OrderAssignResponse>> ordersAssign(
+            LocalDate date
+    ) {
         if (date == null) date = LocalDate.now();
         List<OrderAssignResponse> responses = orderService.assignOrders(date);
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);

@@ -5,6 +5,8 @@ import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderDto;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 
+import java.util.List;
+
 @Component
 public class OrderMapperImpl implements OrderMapper {
 
@@ -16,6 +18,7 @@ public class OrderMapperImpl implements OrderMapper {
         this.regionMapper = regionMapper;
     }
 
+    @Override
     public OrderEntity mapOrderEntity(CreateOrderDto createOrderDto) {
         return new OrderEntity(
                 null,
@@ -28,6 +31,7 @@ public class OrderMapperImpl implements OrderMapper {
         );
     }
 
+    @Override
     public OrderDto mapOrderDto(OrderEntity orderEntity) {
         return new OrderDto(
                 orderEntity.getOrderId(),
@@ -37,6 +41,11 @@ public class OrderMapperImpl implements OrderMapper {
                 orderEntity.getCost(),
                 orderEntity.getCompletedTime()
         );
+    }
+
+    @Override
+    public List<OrderDto> mapOrderDtoList(List<OrderEntity> orderEntityList) {
+        return orderEntityList.stream().map(this::mapOrderDto).toList();
     }
 
 }

@@ -14,6 +14,7 @@ import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequest
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 import ru.yandex.yandexlavka.objects.utils.mapper.OrderMapper;
 import ru.yandex.yandexlavka.repository.CourierRepository;
+import ru.yandex.yandexlavka.repository.GroupOrderRepository;
 import ru.yandex.yandexlavka.repository.OffsetLimitPageable;
 import ru.yandex.yandexlavka.repository.OrderRepository;
 import ru.yandex.yandexlavka.serivce.assignment.OrderAssignService;
@@ -32,14 +33,17 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final CourierRepository courierRepository;
+    private final GroupOrderRepository groupOrderRepository;
+
     private final OrderMapper orderMapper;
 
     private final OrderAssignService orderAssignService;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, CourierRepository courierRepository, OrderMapper orderMapper, OrderAssignService orderAssignService) {
+    public OrderServiceImpl(OrderRepository orderRepository, CourierRepository courierRepository, GroupOrderRepository groupOrderRepository, OrderMapper orderMapper, OrderAssignService orderAssignService) {
         this.orderRepository = orderRepository;
         this.courierRepository = courierRepository;
+        this.groupOrderRepository = groupOrderRepository;
         this.orderMapper = orderMapper;
         this.orderAssignService = orderAssignService;
     }
@@ -147,6 +151,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderAssignResponse> assignOrders(LocalDate date) {
+        if (groupOrderRepository.existsByAssignedDateEquals(date))
+            throw BadRequestException.EMPTY;
+
         AssignedOrdersInfo assignedOrdersInfo = orderAssignService.assignOrders(date);
         OrderAssignResponse response = new OrderAssignResponse(
                 date.toString(),

@@ -3,7 +3,6 @@ package ru.yandex.yandexlavka.serivce.assignment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.yandexlavka.exception.BadRequestException;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.GroupOrdersEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
@@ -49,10 +48,6 @@ public class IterationOrderAssignService implements OrderAssignService {
     @Override
     @Transactional
     public AssignedOrdersInfo assignOrders(LocalDate date) {
-        // Check if nothing has already assigned at this date
-        if (groupOrderRepository.existsByAssignedDateEquals(date))
-            throw BadRequestException.EMPTY;
-
         // Get available couriers (all?) and not assigned orders
         List<CourierEntity> allCourierEntities = courierRepository.findAll();
         Set<OrderEntity> notAssignedOrderEntities = orderRepository.findAllByAssignedGroupOrderNull();
@@ -81,8 +76,11 @@ public class IterationOrderAssignService implements OrderAssignService {
 
         // Save groups to get ids
         Map<CourierEntity, List<GroupOrdersEntity>> assignedSavedGroupOrders = new HashMap<>();
-        assignedGroupOrders.forEach((((courierEntity, groupOrdersEntityList) ->
-                assignedSavedGroupOrders.put(courierEntity, groupOrderRepository.saveAll(groupOrdersEntityList)))));
+        assignedGroupOrders.forEach((courierEntity, groupOrdersEntityList) -> {
+            List<GroupOrdersEntity> savedGroupOrders = groupOrderRepository.saveAll(groupOrdersEntityList);
+            savedGroupOrders.forEach(groupOrders -> groupOrders.getOrders().forEach(orderEntity -> orderEntity.setAssignedGroupOrder(groupOrders)));
+            assignedSavedGroupOrders.put(courierEntity, savedGroupOrders);
+        });
 
         // Form response
         List<CouriersGroupOrders> couriersGroupOrdersList = new ArrayList<>();

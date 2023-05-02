@@ -3,6 +3,7 @@ package ru.yandex.yandexlavka.objects.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class OrderEntity {
     @Temporal(TemporalType.TIMESTAMP)
     LocalDateTime completedTime;
 
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_group_order_id")
     GroupOrdersEntity assignedGroupOrder;

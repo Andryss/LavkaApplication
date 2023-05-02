@@ -3,6 +3,7 @@ package ru.yandex.yandexlavka.objects.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.yandex.yandexlavka.objects.dto.CourierType;
 
@@ -42,6 +43,7 @@ public class CourierEntity {
     )
     List<IntervalEntity> workingHours;
 
+    @EqualsAndHashCode.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "assignedCourier")
     Set<GroupOrdersEntity> assignedGroupOrders;
 }

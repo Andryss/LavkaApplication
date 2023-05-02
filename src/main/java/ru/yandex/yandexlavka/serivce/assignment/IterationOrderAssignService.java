@@ -78,7 +78,10 @@ public class IterationOrderAssignService implements OrderAssignService {
         Map<CourierEntity, List<GroupOrdersEntity>> assignedSavedGroupOrders = new HashMap<>();
         assignedGroupOrders.forEach((courierEntity, groupOrdersEntityList) -> {
             List<GroupOrdersEntity> savedGroupOrders = groupOrderRepository.saveAll(groupOrdersEntityList);
-            savedGroupOrders.forEach(groupOrders -> groupOrders.getOrders().forEach(orderEntity -> orderEntity.setAssignedGroupOrder(groupOrders)));
+            savedGroupOrders.forEach(groupOrders -> {
+                groupOrders.getAssignedCourier().getAssignedGroupOrders().add(groupOrders);
+                groupOrders.getOrders().forEach(orderEntity -> orderEntity.setAssignedGroupOrder(groupOrders));
+            });
             assignedSavedGroupOrders.put(courierEntity, savedGroupOrders);
         });
 
@@ -99,6 +102,7 @@ public class IterationOrderAssignService implements OrderAssignService {
 
     private Set<OrderEntity> getPossibleOrders(CourierEntity courierEntity, Set<OrderEntity> notAssignedOrderEntities) {
         return notAssignedOrderEntities.stream()
+                .filter(orderEntity -> courierEntity.getRegions().contains(orderEntity.getRegions()))
                 .filter(orderEntity -> hasIntersectionsBetween(courierEntity.getWorkingHours(), orderEntity.getDeliveryHours()))
                 .collect(Collectors.toSet());
     }

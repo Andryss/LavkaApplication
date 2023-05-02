@@ -133,6 +133,8 @@ public class OrderServiceImpl implements OrderService {
 
         fetchedOrderEntities.forEach(fetchedOrderEntity -> {
             LocalDateTime completedTime = orderIdToCompletedTime.get(fetchedOrderEntity.getOrderId());
+            if (!fetchedOrderEntity.getAssignedGroupOrder().getAssignedDate().equals(completedTime.toLocalDate()))
+                throw BadRequestException.EMPTY;
             if (!isInsideAnyInterval(completedTime.toLocalTime(), fetchedOrderEntity.getDeliveryHours()))
                 throw BadRequestException.EMPTY;
         });

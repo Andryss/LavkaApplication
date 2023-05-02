@@ -14,7 +14,6 @@ import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 

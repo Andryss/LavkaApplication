@@ -5,6 +5,7 @@ import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderDto;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -33,13 +34,14 @@ public class OrderMapperImpl implements OrderMapper {
 
     @Override
     public OrderDto mapOrderDto(OrderEntity orderEntity) {
+        LocalDateTime completedTime = orderEntity.getCompletedTime();
         return new OrderDto(
                 orderEntity.getOrderId(),
                 orderEntity.getWeight(),
                 regionMapper.mapRegionNumber(orderEntity.getRegions()),
                 intervalMapper.mapIntervalStringList(orderEntity.getDeliveryHours()),
                 orderEntity.getCost(),
-                orderEntity.getCompletedTime()
+                (completedTime == null ? null : completedTime.toString())
         );
     }
 

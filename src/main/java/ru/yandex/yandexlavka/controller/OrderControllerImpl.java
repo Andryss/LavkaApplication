@@ -79,6 +79,6 @@ public class OrderControllerImpl implements OrderController {
     ) {
         if (date == null) date = LocalDate.now();
         List<OrderAssignResponse> responses = orderService.assignOrders(date);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses); // FIXME: why not 200?
     }
 }

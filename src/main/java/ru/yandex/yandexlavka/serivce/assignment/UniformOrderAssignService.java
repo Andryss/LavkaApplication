@@ -2,11 +2,9 @@ package ru.yandex.yandexlavka.serivce.assignment;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.GroupOrdersEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
-import ru.yandex.yandexlavka.objects.mapping.assign.order.CouriersGroupOrders;
 import ru.yandex.yandexlavka.objects.utils.mapper.GroupOrdersMapper;
 import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.GroupOrderRepository;
@@ -22,45 +20,37 @@ import java.util.stream.Collectors;
 import static ru.yandex.yandexlavka.objects.utils.IntervalEntityUtils.hasIntersectionsBetween;
 
 @Component
-public class IterationOrderAssignService implements OrderAssignService {
-
-    private final CourierRepository courierRepository;
-    private final GroupOrderRepository groupOrderRepository;
-    private final OrderRepository orderRepository;
-
-    private final GroupOrdersMapper groupOrdersMapper;
+public class UniformOrderAssignService extends AbstractOrderAssignService {
 
     private final MaxOrdersAmountResolver maxOrdersAmountResolver;
     private final MaxOrdersWeightResolver maxOrdersWeightResolver;
     private final MaxOrdersRegionsAmountResolver maxOrdersRegionsAmountResolver;
 
     @Autowired
-    public IterationOrderAssignService(CourierRepository courierRepository, GroupOrderRepository groupOrderRepository, OrderRepository orderRepository, GroupOrdersMapper groupOrdersMapper, MaxOrdersAmountResolver maxOrdersAmountResolver, MaxOrdersWeightResolver maxOrdersWeightResolver, MaxOrdersRegionsAmountResolver maxOrdersRegionsAmountResolver) {
-        this.courierRepository = courierRepository;
-        this.groupOrderRepository = groupOrderRepository;
-        this.orderRepository = orderRepository;
-        this.groupOrdersMapper = groupOrdersMapper;
+    protected UniformOrderAssignService(CourierRepository courierRepository, OrderRepository orderRepository, GroupOrderRepository groupOrderRepository, GroupOrdersMapper groupOrdersMapper, MaxOrdersAmountResolver maxOrdersAmountResolver, MaxOrdersWeightResolver maxOrdersWeightResolver, MaxOrdersRegionsAmountResolver maxOrdersRegionsAmountResolver) {
+        super(courierRepository, orderRepository, groupOrderRepository, groupOrdersMapper);
         this.maxOrdersAmountResolver = maxOrdersAmountResolver;
         this.maxOrdersWeightResolver = maxOrdersWeightResolver;
         this.maxOrdersRegionsAmountResolver = maxOrdersRegionsAmountResolver;
     }
 
     @Override
-    @Transactional
-    public AssignedOrdersInfo assignOrders(LocalDate date) {
-        // Get available couriers (all?) and not assigned orders
-        List<CourierEntity> allCourierEntities = courierRepository.findAll();
-        Set<OrderEntity> notAssignedOrderEntities = orderRepository.findAllByAssignedGroupOrderNull();
-
-        // Create Map<Courier,AssignedGroups>
+    protected Map<CourierEntity, List<GroupOrdersEntity>> distributeOrders(LocalDate date, List<CourierEntity> allCourierEntities, Set<OrderEntity> notAssignedOrderEntities) {
         Map<CourierEntity, List<GroupOrdersEntity>> assignedGroupOrders = new HashMap<>();
+        Map<CourierEntity, Set<OrderEntity>> possibleCourierOrders = new HashMap<>();
 
         // Iteration
         while (!notAssignedOrderEntities.isEmpty()) {
             boolean isSomethingAssigned = false;
             for (CourierEntity courierEntity : allCourierEntities) {
                 // Get orders which can deliver that courier
-                Set<OrderEntity> possibleOrders = getPossibleOrders(courierEntity, notAssignedOrderEntities);
+                Set<OrderEntity> possibleOrders = possibleCourierOrders.get(courierEntity);
+                if (possibleOrders == null) {
+                    possibleOrders = getPossibleOrders(courierEntity, notAssignedOrderEntities);
+                    possibleCourierOrders.put(courierEntity, possibleOrders);
+                } else {
+                    possibleOrders.retainAll(notAssignedOrderEntities);
+                }
                 if (possibleOrders.isEmpty()) continue;
 
                 // Create some group from possible orders
@@ -74,34 +64,13 @@ public class IterationOrderAssignService implements OrderAssignService {
             if (!isSomethingAssigned) break;
         }
 
-        // Save groups to get ids
-        Map<CourierEntity, List<GroupOrdersEntity>> assignedSavedGroupOrders = new HashMap<>();
-        assignedGroupOrders.forEach((courierEntity, groupOrdersEntityList) -> {
-            List<GroupOrdersEntity> savedGroupOrders = groupOrderRepository.saveAll(groupOrdersEntityList);
-            savedGroupOrders.forEach(groupOrders -> {
-                groupOrders.getAssignedCourier().getAssignedGroupOrders().add(groupOrders);
-                groupOrders.getOrders().forEach(orderEntity -> orderEntity.setAssignedGroupOrder(groupOrders));
-            });
-            assignedSavedGroupOrders.put(courierEntity, savedGroupOrders);
-        });
-
-        // Form response
-        List<CouriersGroupOrders> couriersGroupOrdersList = new ArrayList<>();
-
-        assignedSavedGroupOrders.forEach(
-                ((courierEntity, groupOrdersEntityList) ->
-                        couriersGroupOrdersList.add(new CouriersGroupOrders(
-                                courierEntity.getCourierId(),
-                                groupOrdersMapper.mapGroupOrdersList(groupOrdersEntityList))
-                        )));
-
-        return new AssignedOrdersInfo(
-                couriersGroupOrdersList
-        );
+        return assignedGroupOrders;
     }
 
     private Set<OrderEntity> getPossibleOrders(CourierEntity courierEntity, Set<OrderEntity> notAssignedOrderEntities) {
+        float maxOrderWeight = maxOrdersWeightResolver.resolve(courierEntity);
         return notAssignedOrderEntities.stream()
+                .filter(orderEntity -> orderEntity.getWeight() <= maxOrderWeight)
                 .filter(orderEntity -> courierEntity.getRegions().contains(orderEntity.getRegions()))
                 .filter(orderEntity -> hasIntersectionsBetween(courierEntity.getWorkingHours(), orderEntity.getDeliveryHours()))
                 .collect(Collectors.toSet());

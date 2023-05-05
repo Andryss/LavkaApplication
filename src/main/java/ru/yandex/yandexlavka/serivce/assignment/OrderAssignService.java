@@ -10,6 +10,12 @@ import java.util.List;
 
 public interface OrderAssignService {
 
+    /**
+     * Splits orders into groups and assign that groups to couriers
+     * @param date assignment date
+     * @return order groups assigned to couriers
+     * @see ru.yandex.yandexlavka.controller.OrderController
+     */
     AssignedOrdersInfo assignOrders(LocalDate date);
 
     @Data

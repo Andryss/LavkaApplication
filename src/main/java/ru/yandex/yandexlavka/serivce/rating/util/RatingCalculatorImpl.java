@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class RatingCalculatorImpl implements RatingCalculator {
     @Override
     public int calculate(CourierEntity courier, LocalDate startDate, LocalDate endDate, List<OrderEntity> completedOrders) {
         int completedOrdersCount = completedOrders.size();
-        int hoursAmount = startDate.until(endDate).getDays() * 24;
+        long hoursAmount = Duration.between(startDate.atStartOfDay(), endDate.atStartOfDay()).toHours();
         int coefficient = ratingCoefficientResolver.resolve(courier);
-        return (completedOrdersCount / hoursAmount) * coefficient;
+        return (int) (((double) completedOrdersCount / hoursAmount) * coefficient);
     }
 }

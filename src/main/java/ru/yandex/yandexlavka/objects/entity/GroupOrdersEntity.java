@@ -1,10 +1,7 @@
 package ru.yandex.yandexlavka.objects.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +23,7 @@ public class GroupOrdersEntity {
     LocalDate assignedDate;
 
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_courier_id")
     CourierEntity assignedCourier;

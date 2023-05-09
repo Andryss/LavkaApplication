@@ -1,10 +1,7 @@
 package ru.yandex.yandexlavka.objects.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.yandex.yandexlavka.objects.dto.CourierType;
 
 import java.util.List;

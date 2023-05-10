@@ -109,7 +109,7 @@ public class OrderServiceImpl implements OrderService {
         if (fetchedOrderEntities.size() != completeOrderIds.size())
             throw BadRequestException.EMPTY;
         // Check if all orders can be completed
-        if (fetchedOrderEntities.stream().anyMatch(orderEntity -> orderEntity.getAssignedGroupOrder() == null || orderEntity.getCompletedTime() != null))
+        if (fetchedOrderEntities.stream().anyMatch(orderEntity -> orderEntity.getAssignedGroupOrder() == null))
             throw BadRequestException.EMPTY;
 
         // Check if all orders was completed by assigned couriers

@@ -15,7 +15,7 @@ public class DateTimeParserImpl implements DateTimeParser {
         return chars[0] < '0' || chars[0] > '2' ||
                 !Character.isDigit(chars[1]) ||
                 chars[2] != ':' ||
-                chars[3] < '0' || chars[3] > '6' ||
+                chars[3] < '0' || chars[3] > '5' ||
                 !Character.isDigit(chars[4]);
     }
     public LocalTime parseShortTime(String timeString) {

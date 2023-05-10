@@ -123,7 +123,7 @@ public class OrderServiceImpl implements OrderService {
                 throw BadRequestException.EMPTY;
         });
 
-        // Check if all orders/couriers has right deliveryTime/workingHours
+        // Create mappings (courierId/orderId to CompletedTime)
         Map<Long, LocalDateTime> orderIdToCompletedTime = new HashMap<>(completeInfo.size());
         Map<Long, LocalDateTime> courierIdToCompletedTime = new HashMap<>(completeInfo.size());
         completeInfo.forEach(completeOrder -> {
@@ -131,6 +131,12 @@ public class OrderServiceImpl implements OrderService {
             courierIdToCompletedTime.put(completeOrder.getCourierId(), completeOrder.getCompleteTime());
         });
 
+        // Check if all orders can be completed (again)
+        if (fetchedOrderEntities.stream().anyMatch(orderEntity -> orderEntity.getCompletedTime() != null &&
+                !orderEntity.getCompletedTime().equals(orderIdToCompletedTime.get(orderEntity.getOrderId()))))
+            throw BadRequestException.EMPTY;
+
+        // Check if all orders/couriers has right deliveryTime/workingHours
         fetchedOrderEntities.forEach(fetchedOrderEntity -> {
             LocalDateTime completedTime = orderIdToCompletedTime.get(fetchedOrderEntity.getOrderId());
             if (!fetchedOrderEntity.getAssignedGroupOrder().getAssignedDate().equals(completedTime.toLocalDate()))

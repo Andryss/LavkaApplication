@@ -44,7 +44,7 @@ public class TimeValidator implements Validator {
             LocalTime startTime = dateTimeParser.parseShortTime(startTimeString);
             LocalTime endTime = dateTimeParser.parseShortTime(endTimeString);
 
-            if (startTime.isAfter(endTime)) {
+            if (!startTime.isBefore(endTime)) {
                 errors.reject("", "End must be after start");
             }
         } catch (Exception e) {

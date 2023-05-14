@@ -74,7 +74,7 @@ public interface OrderController {
      */
     @PostMapping("/assign")
     ResponseEntity<List<OrderAssignResponse>> ordersAssign( // FIXME: why List<>? Singleton list :)
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date // FIXME: data is deprecated? seriously?
     );
 
 }

@@ -18,6 +18,7 @@ public class CreateOrderDto {
     Float weight;
 
     @NotNull
+    @Positive
     Integer regions;
 
     @NotEmpty

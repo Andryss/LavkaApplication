@@ -3,7 +3,6 @@ package ru.yandex.yandexlavka.objects.utils;
 import ru.yandex.yandexlavka.objects.entity.IntervalEntity;
 
 import java.time.LocalTime;
-import java.util.Comparator;
 import java.util.List;
 
 import static java.util.Comparator.comparing;
@@ -26,8 +25,8 @@ public class IntervalEntityUtils {
     }
 
     public static boolean hasIntersectionsBetween(List<IntervalEntity> intervalList1, List<IntervalEntity> intervalList2) {
-        intervalList1.sort(Comparator.comparing(IntervalEntity::getStartTime));
-        intervalList2.sort(Comparator.comparing(IntervalEntity::getStartTime));
+        intervalList1.sort(comparing(IntervalEntity::getStartTime));
+        intervalList2.sort(comparing(IntervalEntity::getStartTime));
         int i1 = 0, i2 = 0;
         while (i1 < intervalList1.size() && i2 < intervalList2.size()) {
             IntervalEntity interval1 = intervalList1.get(i1), interval2 = intervalList2.get(i2);
@@ -44,5 +43,26 @@ public class IntervalEntityUtils {
 
     public static boolean isInsideAnyInterval(LocalTime time, List<IntervalEntity> intervalList) {
         return intervalList.stream().anyMatch(interval -> isInsideInterval(time, interval));
+    }
+
+    public static LocalTime getIntersectionPoint(IntervalEntity interval1, IntervalEntity interval2) {
+        if (!interval1.getStartTime().isBefore(interval2.getStartTime()) && !interval1.getStartTime().isAfter(interval2.getEndTime()))
+            return interval1.getStartTime();
+        if (!interval1.getEndTime().isBefore(interval2.getStartTime()) && !interval1.getEndTime().isAfter(interval2.getEndTime()))
+            return interval1.getEndTime();
+        throw new IllegalArgumentException("No intersection");
+    }
+
+    public static LocalTime getIntersectionPointBetween(List<IntervalEntity> intervalList1, List<IntervalEntity> intervalList2) {
+        intervalList1.sort(comparing(IntervalEntity::getStartTime));
+        intervalList2.sort(comparing(IntervalEntity::getStartTime));
+        int i1 = 0, i2 = 0;
+        while (i1 < intervalList1.size() && i2 < intervalList2.size()) {
+            IntervalEntity interval1 = intervalList1.get(i1), interval2 = intervalList2.get(i2);
+            if (isIntersecting(interval1, interval2)) return getIntersectionPoint(interval1, interval2);
+            if (interval1.getStartTime().compareTo(interval2.getStartTime()) > 0) i2++;
+            else i1++;
+        }
+        throw new IllegalArgumentException("No intersection");
     }
 }

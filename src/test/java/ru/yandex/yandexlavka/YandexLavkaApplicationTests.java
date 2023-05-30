@@ -7,12 +7,21 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
+import ru.yandex.yandexlavka.objects.entity.CourierEntity;
+import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.CouriersGroupOrders;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.GroupOrders;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.utils.IntervalEntityUtils;
+import ru.yandex.yandexlavka.repository.CourierRepository;
+import ru.yandex.yandexlavka.repository.OrderRepository;
 import ru.yandex.yandexlavka.util.HTTPSender;
 import ru.yandex.yandexlavka.util.generator.CourierGenerator;
 import ru.yandex.yandexlavka.util.generator.OrderGenerator;
@@ -20,7 +29,9 @@ import ru.yandex.yandexlavka.util.generator.OrderGenerator;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -28,7 +39,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class YandexLavkaApplicationTests {
 
     @Value("http://localhost:${local.server.port}")
@@ -56,119 +66,125 @@ class YandexLavkaApplicationTests {
     private final Map<Long,List<Long>> assignments = new HashMap<>();
 
 
-    @SneakyThrows
     @BeforeAll
-    void addSomeCouriers() {
-        System.out.println("Adding some couriers");
+    void setUp() {
+        System.out.println("Perform createCouriers request");
+        int addedCouriers = addCouriers0();
+        System.out.println("Created " + addedCouriers + " couriers");
 
+        System.out.println("Perform createOrders request");
+        int addedOrders = addOrders0();
+        System.out.println("Created " + addedOrders + " orders");
+
+        System.out.println("Perform assignOrders request");
+        int assignedOrders = assignOrders0();
+        System.out.println("Assigned " + assignedOrders + " orders");
+
+        System.out.println("Perform completeOrders request");
+        int completedOrders = completeOrders0();
+        System.out.println("Completed " + completedOrders + " orders");
+    }
+
+    @SneakyThrows
+    int addCouriers0() {
         String url = defaultURL + "/couriers";
 
+        int addedCouriers = 0;
         for (int i = 0; i < 100; i++){
-            long start = System.nanoTime();
-
             CreateCourierRequest createCourierRequest = courierGenerator.createCreateCourierRequest();
-            String request = mapper.writeValueAsString(createCourierRequest);
-            HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url, request);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
+            HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url, createCourierRequest);
             if (httpResponse.statusCode() != 200) continue;
-
             CreateCouriersResponse response = mapper.readValue(httpResponse.body(), CreateCouriersResponse.class);
             response.getCouriers().forEach(courierDto -> addedCouriersIds.add(courierDto.getCourierId()));
+            addedCouriers += response.getCouriers().size();
         }
-
-        System.out.println("Added " + addedCouriersIds.size() + " couriers");
+        return addedCouriers;
     }
 
     @SneakyThrows
-    @BeforeAll
-    void addSomeOrders() {
-        System.out.println("Adding some orders");
-
+    int addOrders0() {
         String url = defaultURL + "/orders";
 
+        int addedOrders = 0;
         for (int i = 0; i < 100; i++){
-            long start = System.nanoTime();
-
             CreateOrderRequest createOrderRequest = orderGenerator.createCreateOrderRequest();
-            String request = mapper.writeValueAsString(createOrderRequest);
-            HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url, request);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
+            HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url, createOrderRequest);
             if (httpResponse.statusCode() != 200) continue;
-
             List<OrderDto> response = mapper.readValue(httpResponse.body(), new TypeReference<>() {});
             response.forEach(orderDto -> addedOrdersIds.add(orderDto.getOrderId()));
+            addedOrders += response.size();
         }
-
-        System.out.println("Added " + addedOrdersIds.size() + " orders");
+        return addedOrders;
     }
 
     @SneakyThrows
-    @Test
-    @Order(1)
-    void assignOrdersToCouriers() {
-        System.out.println("Assign orders");
-
+    int assignOrders0() {
         String url = defaultURL + "/orders/assign?date=" + assignDate;
 
-        long start = System.nanoTime();
-
-        HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url, "");
-
-        long finish = System.nanoTime();
-        System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
+        HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url);
 
         assertThat(httpResponse.statusCode(), is(201));
 
         List<OrderAssignResponse> response = mapper.readValue(httpResponse.body(), new TypeReference<>() {});
         OrderAssignResponse assignResponse = response.get(0);
 
-        int[] assignedOrders = {0};
-        assignResponse.getCouriers().forEach(couriersGroupOrders -> {
+        int assignedOrders = 0;
+        for (CouriersGroupOrders couriersGroupOrders : assignResponse.getCouriers()) {
             Long courierId = couriersGroupOrders.getCourierId();
-            couriersGroupOrders.getOrders().forEach(groupOrders ->{
-                groupOrders.getOrders().forEach(orderDto ->
-                        assignments.computeIfAbsent(courierId, l -> new ArrayList<>()).add(orderDto.getOrderId())
-                );
-                assignedOrders[0] += groupOrders.getOrders().size();
-            });
-        });
+            for (GroupOrders groupOrders : couriersGroupOrders.getOrders()) {
+                List<Long> idList = groupOrders.getOrders().stream().map(OrderDto::getOrderId).toList();
+                assignments.computeIfAbsent(courierId, l -> new ArrayList<>()).addAll(idList);
+                assignedOrders += groupOrders.getOrders().size();
+            }
+        }
+        return assignedOrders;
+    }
 
-        System.out.println("Assigned " + assignedOrders[0] + " orders");
+    @Autowired
+    private CourierRepository courierRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+
+    int completeOrders0() {
+        String url = defaultURL + "/orders/complete";
+        List<CompleteOrder> completeOrderList = new ArrayList<>();
+
+        AtomicInteger completedOrder = new AtomicInteger(0);
+        assignments.forEach(((courierId, orderIds) -> {
+            CourierEntity courierEntity = courierRepository.findById(courierId).orElseThrow();
+            orderIds.forEach(orderId -> {
+                OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow();
+                LocalTime intersectionPointBetween = IntervalEntityUtils.getIntersectionPointBetween(courierEntity.getWorkingHours(), orderEntity.getDeliveryHours());
+                completeOrderList.add(new CompleteOrder(
+                        courierId,
+                        orderId,
+                        intersectionPointBetween.atDate(assignDate)
+                ));
+                completedOrder.incrementAndGet();
+            });
+        }));
+
+        CompleteOrderRequestDto completeOrderRequestDto = new CompleteOrderRequestDto(completeOrderList);
+        HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url, completeOrderRequestDto);
+        assertThat(httpResponse.statusCode(), is(200));
+
+        return completedOrder.get();
     }
 
     @Test
-    @Order(2)
-    void getOneCourierRequest() {
+    void getOneCourier() {
         System.out.println("Perform GET /courier/{id} request");
 
         String url = defaultURL + "/couriers/";
 
         for (Long addedCourierId : addedCouriersIds) {
-            long start = System.nanoTime();
-
             HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url + addedCourierId);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
             assertThat(httpResponse.statusCode(), is(200));
         }
 
         long maxAddedId = addedCouriersIds.stream().mapToLong(Long::longValue).max().orElse(0);
         for (long i = maxAddedId + 1; i < maxAddedId + 101; i++){
-            long start = System.nanoTime();
-
             HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url + i);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
             assertThat(httpResponse.statusCode(), is(404));
         }
 
@@ -176,20 +192,13 @@ class YandexLavkaApplicationTests {
     }
 
     @Test
-    @Order(3)
-    void getAllCouriersRequest() {
+    void getAllCouriers() {
         System.out.println("Perform GET /couriers request");
 
         String url = defaultURL + "/couriers?limit=1000000";
 
         for (int i = 0; i < 100; i++){
-            long start = System.nanoTime();
-
             HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
             assertThat(httpResponse.statusCode(), is(200));
         }
 
@@ -197,32 +206,19 @@ class YandexLavkaApplicationTests {
     }
 
     @Test
-    @Order(4)
-    void getOneOrderRequest() {
+    void getOneOrder() {
         System.out.println("Perform GET /order/{id} request");
 
         String url = defaultURL + "/orders/";
 
         for (Long addedOrderId : addedOrdersIds) {
-            long start = System.nanoTime();
-
             HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url + addedOrderId);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
             assertThat(httpResponse.statusCode(), is(200));
         }
 
         long maxAddedId = addedOrdersIds.stream().mapToLong(Long::longValue).max().orElse(0);
         for (long i = maxAddedId + 1; i < maxAddedId + 101; i++){
-            long start = System.nanoTime();
-
             HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url + i);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
             assertThat(httpResponse.statusCode(), is(404));
         }
 
@@ -230,20 +226,13 @@ class YandexLavkaApplicationTests {
     }
 
     @Test
-    @Order(5)
-    void getAllOrdersRequest() {
+    void getAllOrders() {
         System.out.println("Perform GET /orders request");
 
         String url = defaultURL + "/orders?limit=1000000";
 
         for (int i = 0; i < 100; i++){
-            long start = System.nanoTime();
-
             HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
             assertThat(httpResponse.statusCode(), is(200));
         }
 
@@ -252,22 +241,13 @@ class YandexLavkaApplicationTests {
 
     @SneakyThrows
     @Test
-    @Order(6)
-    void getCourierAssignmentsRequest() {
+    void getCourierAssignments() {
         System.out.println("Perform GET /couriers/assignments request");
 
         String url = defaultURL + "/couriers/assignments?date=" + assignDate + "&courier_id=";
 
-        Set<Long> courierIds = assignments.keySet();
-
-        for (Long courierId : courierIds) {
-            long start = System.nanoTime();
-
+        for (Long courierId : assignments.keySet()) {
             HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url + courierId);
-
-            long finish = System.nanoTime();
-            System.out.println(((finish - start) / 1_000_000) + "ms >>> " + httpResponse);
-
             assertThat(httpResponse.statusCode(), is(200));
 
             OrderAssignResponse response = mapper.readValue(httpResponse.body(), OrderAssignResponse.class);
@@ -290,4 +270,18 @@ class YandexLavkaApplicationTests {
         System.out.println("Performed");
     }
 
+    @Test
+    void getCourierMetaInfo() {
+        System.out.println("Perform GET /couriers/meta-info/{id} request");
+
+        String url = defaultURL + "/couriers/meta-info/";
+        String urlTail = "?startDate=" + assignDate + "&endDate=" + assignDate.plusDays(1);
+
+        assignments.keySet().forEach(courierId -> {
+            HttpResponse<String> httpResponse = httpSender.sendGetRequest(httpClient, url + courierId + urlTail);
+            assertThat(httpResponse.statusCode(), is(200));
+        });
+
+        System.out.println("Performed");
+    }
 }

@@ -14,6 +14,7 @@ import ru.yandex.yandexlavka.objects.mapping.assign.order.GroupOrders;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMetaInfoResponse;
 import ru.yandex.yandexlavka.objects.utils.mapper.CourierMapper;
@@ -71,8 +72,11 @@ public class CourierServiceImpl implements CourierService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<CourierDto> getCourierById(Long courierId) {
-        return courierRepository.findById(courierId).map(courierMapper::mapCourierDto);
+    public GetCourierResponse getCourierById(Long courierId) {
+        Optional<CourierDto> courierDtoOptional = courierRepository.findById(courierId).map(courierMapper::mapCourierDto);
+        if (courierDtoOptional.isEmpty())
+            throw BadRequestException.EMPTY;
+        return new GetCourierResponse(courierDtoOptional.get());
     }
 
     @Transactional(readOnly = true)

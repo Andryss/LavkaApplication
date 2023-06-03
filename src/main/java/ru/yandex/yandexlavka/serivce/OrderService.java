@@ -3,7 +3,11 @@ package ru.yandex.yandexlavka.serivce;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,13 +15,13 @@ import java.util.Optional;
 
 public interface OrderService {
 
-    List<OrderDto> addOrders(CreateOrderRequest request);
+    CreateOrderResponse addOrders(CreateOrderRequest request);
 
-    Optional<OrderDto> getOrderById(Long orderId);
+    GetOrderResponse getOrderById(Long orderId);
 
-    List<OrderDto> getOrderRange(Integer offset, Integer limit);
+    GetOrdersResponse getOrderRange(Integer offset, Integer limit);
 
-    List<OrderDto> completeOrders(CompleteOrderRequestDto completeOrderRequestDto);
+    CompleteOrderResponse completeOrders(CompleteOrderRequestDto completeOrderRequestDto);
 
-    List<OrderAssignResponse> assignOrders(LocalDate date);
+    OrderAssignResponse assignOrders(LocalDate date);
 }

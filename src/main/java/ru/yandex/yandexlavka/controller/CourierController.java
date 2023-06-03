@@ -8,10 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMetaInfoResponse;
 
@@ -21,6 +21,9 @@ import java.time.LocalDate;
 @Validated
 public interface CourierController {
 
+    /*
+    TODO: rewrite the javadoc
+     */
     /**
      * Loads couriers into the system
      * @param createCourierRequest info about couriers to load
@@ -39,7 +42,7 @@ public interface CourierController {
      * @return courier info
      */
     @GetMapping("/{courier_id}")
-    ResponseEntity<CourierDto> getCourierById(
+    ResponseEntity<GetCourierResponse> getCourierById(
             @PathVariable("courier_id") Long courierId
     );
 
@@ -51,8 +54,8 @@ public interface CourierController {
      */
     @GetMapping
     ResponseEntity<GetCouriersResponse> getCouriers(
-            @RequestParam(defaultValue = "0") @PositiveOrZero Integer offset,
-            @RequestParam(defaultValue = "1") @Positive Integer limit
+            @RequestParam(name = "offset", defaultValue = "0") @PositiveOrZero Integer offset,
+            @RequestParam(name = "limit", defaultValue = "1") @Positive Integer limit
     );
 
     /**
@@ -65,8 +68,8 @@ public interface CourierController {
     @GetMapping("/meta-info/{courier_id}")
     ResponseEntity<GetCourierMetaInfoResponse> getCourierMetaInfo(
             @PathVariable("courier_id") Long courierId,
-            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, // FIXME: why not "start_date"?
-            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate // FIXME: why not "end_date"?
+            @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     );
 
     /**
@@ -77,7 +80,7 @@ public interface CourierController {
      */
     @GetMapping("/assignments")
     ResponseEntity<OrderAssignResponse> couriersAssignments(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam("courier_id") Long courierId
     );
 

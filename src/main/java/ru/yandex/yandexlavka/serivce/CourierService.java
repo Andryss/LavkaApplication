@@ -4,6 +4,7 @@ import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMetaInfoResponse;
 
@@ -14,7 +15,7 @@ public interface CourierService {
 
     CreateCouriersResponse addCouriers(CreateCourierRequest request);
 
-    Optional<CourierDto> getCourierById(Long courierId);
+    GetCourierResponse getCourierById(Long courierId);
 
     GetCouriersResponse getCourierRange(Integer offset, Integer limit);
 

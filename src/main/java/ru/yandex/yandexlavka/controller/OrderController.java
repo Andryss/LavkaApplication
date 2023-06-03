@@ -9,18 +9,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RequestMapping("/orders")
 @Validated
 public interface OrderController {
 
+    /*
+    TODO: rewrite the javadoc
+     */
     /**
      * Loads orders into the system
      * @param createOrderRequest info about orders to load
@@ -28,7 +33,7 @@ public interface OrderController {
      * @return added orders with assigned IDs
      */
     @PostMapping
-    ResponseEntity<List<OrderDto>> createOrder( // FIXME: why not "CreateOrderResponse"?
+    ResponseEntity<CreateOrderResponse> createOrder(
             @RequestBody @Valid CreateOrderRequest createOrderRequest,
             BindingResult bindingResult
     );
@@ -39,8 +44,8 @@ public interface OrderController {
      * @return order info
      */
     @GetMapping("/{order_id}")
-    ResponseEntity<OrderDto> getOrder(
-            @PathVariable(name = "order_id") Long orderId
+    ResponseEntity<GetOrderResponse> getOrder(
+            @PathVariable("order_id") Long orderId
     );
 
     /**
@@ -50,9 +55,9 @@ public interface OrderController {
      * @return list of orders info
      */
     @GetMapping
-    ResponseEntity<List<OrderDto>> getOrders( // FIXME: why not "GetOrdersResponse"?
-            @RequestParam(defaultValue = "0") @PositiveOrZero Integer offset,
-            @RequestParam(defaultValue = "1") @Positive Integer limit
+    ResponseEntity<GetOrdersResponse> getOrders(
+            @RequestParam(name = "offset", defaultValue = "0") @PositiveOrZero Integer offset,
+            @RequestParam(name = "limit", defaultValue = "1") @Positive Integer limit
     );
 
     /**
@@ -62,7 +67,7 @@ public interface OrderController {
      * @return list of completed orders with completed time
      */
     @PostMapping("/complete")
-    ResponseEntity<List<OrderDto>> completeOrder( // FIXME: why not "CompleteOrdersResponse"?
+    ResponseEntity<CompleteOrderResponse> completeOrder(
             @RequestBody @Valid CompleteOrderRequestDto completeOrderRequestDto,
             BindingResult bindingResult
     );
@@ -73,8 +78,8 @@ public interface OrderController {
      * @return order groups assigned to couriers
      */
     @PostMapping("/assign")
-    ResponseEntity<List<OrderAssignResponse>> ordersAssign( // FIXME: why List<>? Singleton list :)
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date // FIXME: data is deprecated? seriously?
+    ResponseEntity<OrderAssignResponse> ordersAssign(
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date // data is deprecated? seriously?
     );
 
 }

@@ -12,7 +12,7 @@ import java.util.List;
 public class OrderDto {
     Long orderId;
     Float weight;
-    Integer regions; // FIXME: why not "region"?
+    Integer region;
     List<String> deliveryHours;
     Integer cost;
     String completedTime;

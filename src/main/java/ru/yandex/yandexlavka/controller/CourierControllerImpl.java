@@ -13,6 +13,7 @@ import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMetaInfoResponse;
 import ru.yandex.yandexlavka.serivce.CourierService;
@@ -45,13 +46,11 @@ public class CourierControllerImpl implements CourierController {
     }
 
     @Override
-    public ResponseEntity<CourierDto> getCourierById(
+    public ResponseEntity<GetCourierResponse> getCourierById(
             Long courierId
     ) {
-        Optional<CourierDto> courierById = courierService.getCourierById(courierId);
-        if (courierById.isEmpty())
-            throw NotFoundException.EMPTY;
-        return ResponseEntity.ok(courierById.get());
+        GetCourierResponse response = courierService.getCourierById(courierId);
+        return ResponseEntity.ok(response);
     }
 
     @Override

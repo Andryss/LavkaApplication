@@ -12,7 +12,11 @@ import ru.yandex.yandexlavka.exception.NotFoundException;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
 import ru.yandex.yandexlavka.serivce.OrderService;
 
 import java.time.LocalDate;
@@ -32,53 +36,51 @@ public class OrderControllerImpl implements OrderController {
     }
 
     @Override
-    public ResponseEntity<List<OrderDto>> createOrder(
+    public ResponseEntity<CreateOrderResponse> createOrder(
             CreateOrderRequest createOrderRequest,
             BindingResult bindingResult
     ) {
         createOrderRequestValidator.validate(createOrderRequest, bindingResult);
         if (bindingResult.hasErrors())
             throw BadRequestException.EMPTY;
-        List<OrderDto> response = orderService.addOrders(createOrderRequest);
+        CreateOrderResponse response = orderService.addOrders(createOrderRequest);
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<OrderDto> getOrder(
+    public ResponseEntity<GetOrderResponse> getOrder(
             Long orderId
     ) {
-        Optional<OrderDto> orderById = orderService.getOrderById(orderId);
-        if (orderById.isEmpty())
-            throw NotFoundException.EMPTY;
-        return ResponseEntity.ok(orderById.get());
+        GetOrderResponse response = orderService.getOrderById(orderId);
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<List<OrderDto>> getOrders(
+    public ResponseEntity<GetOrdersResponse> getOrders(
             Integer offset,
             Integer limit
     ) {
-        List<OrderDto> response = orderService.getOrderRange(offset, limit);
+        GetOrdersResponse response = orderService.getOrderRange(offset, limit);
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<List<OrderDto>> completeOrder(
+    public ResponseEntity<CompleteOrderResponse> completeOrder(
             CompleteOrderRequestDto completeOrderRequestDto,
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors())
             throw BadRequestException.EMPTY;
-        List<OrderDto> response = orderService.completeOrders(completeOrderRequestDto);
+        CompleteOrderResponse response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<List<OrderAssignResponse>> ordersAssign(
+    public ResponseEntity<OrderAssignResponse> ordersAssign(
             LocalDate date
     ) {
         if (date == null) date = LocalDate.now();
-        List<OrderAssignResponse> responses = orderService.assignOrders(date);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responses); // FIXME: why not 200?
+        OrderAssignResponse responses = orderService.assignOrders(date);
+        return ResponseEntity.ok(responses);
     }
 }

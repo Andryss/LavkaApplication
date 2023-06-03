@@ -11,7 +11,11 @@ import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
 import ru.yandex.yandexlavka.objects.utils.mapper.OrderMapper;
 import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.GroupOrderRepository;
@@ -50,14 +54,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public List<OrderDto> addOrders(CreateOrderRequest request) {
+    public CreateOrderResponse addOrders(CreateOrderRequest request) {
         List<OrderEntity> orderEntitiesToSave = request.getOrders().stream()
                 .map(orderMapper::mapOrderEntity)
                 .peek(this::courierEntityHasNoIntersectingIntervals)
                 .toList();
-        return orderRepository.saveAll(orderEntitiesToSave).stream()
+        List<OrderDto> response = orderRepository.saveAll(orderEntitiesToSave).stream()
                 .map(orderMapper::mapOrderDto)
                 .toList();
+        return new CreateOrderResponse(response);
     }
 
     private void courierEntityHasNoIntersectingIntervals(OrderEntity orderEntity) {
@@ -67,22 +72,26 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<OrderDto> getOrderById(Long orderId) {
-        return orderRepository.findById(orderId).map(orderMapper::mapOrderDto);
+    public GetOrderResponse getOrderById(Long orderId) {
+        Optional<OrderDto> orderDtoOptional = orderRepository.findById(orderId).map(orderMapper::mapOrderDto);
+        if (orderDtoOptional.isEmpty())
+            throw BadRequestException.EMPTY;
+        return new GetOrderResponse(orderDtoOptional.get());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderDto> getOrderRange(Integer offset, Integer limit) {
+    public GetOrdersResponse getOrderRange(Integer offset, Integer limit) {
         Page<OrderEntity> orderEntityPage = orderRepository.findAll(OffsetLimitPageable.of(offset, limit));
-        return orderEntityPage.stream()
+        List<OrderDto> response = orderEntityPage.stream()
                 .map(orderMapper::mapOrderDto)
                 .toList();
+        return new GetOrdersResponse(response, limit, offset);
     }
 
     @Override
     @Transactional
-    public List<OrderDto> completeOrders(CompleteOrderRequestDto completeOrderRequestDto) {
+    public CompleteOrderResponse completeOrders(CompleteOrderRequestDto completeOrderRequestDto) {
         List<CompleteOrder> completeInfo = completeOrderRequestDto.getCompleteInfo();
 
         // Check if no order has completed more than 1 time
@@ -151,22 +160,22 @@ public class OrderServiceImpl implements OrderService {
         });
 
         // Complete orders
-        return fetchedOrderEntities.stream()
+        List<OrderDto> response = fetchedOrderEntities.stream()
                 .peek(orderEntity -> orderEntity.setCompletedTime(orderIdToCompletedTime.get(orderEntity.getOrderId())))
                 .map(orderMapper::mapOrderDto)
                 .toList();
+        return new CompleteOrderResponse(response);
     }
 
     @Override
-    public List<OrderAssignResponse> assignOrders(LocalDate date) {
+    public OrderAssignResponse assignOrders(LocalDate date) {
         if (groupOrderRepository.existsByAssignedDateEquals(date))
             throw BadRequestException.EMPTY;
 
         AssignedOrdersInfo assignedOrdersInfo = orderAssignService.assignOrders(date);
-        OrderAssignResponse response = new OrderAssignResponse(
+        return new OrderAssignResponse(
                 date.toString(),
                 assignedOrdersInfo.getAssignedCouriersGroupOrders()
         );
-        return Collections.singletonList(response);
     }
 }

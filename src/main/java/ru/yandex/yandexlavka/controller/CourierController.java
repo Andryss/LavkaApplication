@@ -21,9 +21,6 @@ import java.time.LocalDate;
 @Validated
 public interface CourierController {
 
-    /*
-    TODO: rewrite the javadoc
-     */
     /**
      * Loads couriers into the system
      * @param createCourierRequest info about couriers to load
@@ -37,7 +34,7 @@ public interface CourierController {
     );
 
     /**
-     * Returns info about courier
+     * Returns info about some courier
      * @param courierId courier id to get info about
      * @return courier info
      */

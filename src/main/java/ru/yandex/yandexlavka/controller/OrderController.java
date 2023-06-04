@@ -23,9 +23,6 @@ import java.time.LocalDate;
 @Validated
 public interface OrderController {
 
-    /*
-    TODO: rewrite the javadoc
-     */
     /**
      * Loads orders into the system
      * @param createOrderRequest info about orders to load
@@ -39,7 +36,7 @@ public interface OrderController {
     );
 
     /**
-     * Returns info about order
+     * Returns info about some order
      * @param orderId order id to get info about
      * @return order info
      */

@@ -1,6 +1,7 @@
 package ru.yandex.yandexlavka.controller;
 
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -18,18 +19,27 @@ import ru.yandex.yandexlavka.exception.NotFoundResponse;
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private final CustomExceptionLogger exceptionLogger;
+
+    @Autowired
+    public CustomExceptionHandler(CustomExceptionLogger exceptionLogger) {
+        this.exceptionLogger = exceptionLogger;
+    }
+
     @ExceptionHandler({
             BadRequestException.class,
             ConstraintViolationException.class
     })
-    ResponseEntity<Object> handleBadRequest() {
+    ResponseEntity<Object> handleBadRequest(@NonNull Exception ex) {
+        exceptionLogger.info(ex);
         return ResponseEntity.badRequest().body(new BadRequestResponse());
     }
 
     @ExceptionHandler({
             NotFoundException.class
     })
-    ResponseEntity<Object> handleNotFound() {
+    ResponseEntity<Object> handleNotFound(@NonNull Exception ex) {
+        exceptionLogger.info(ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new NotFoundResponse());
     }
 
@@ -38,6 +48,6 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull Exception ex, Object body, @NonNull HttpHeaders headers,
             @NonNull HttpStatusCode statusCode, @NonNull WebRequest request
     ) {
-        return handleBadRequest();
+        return handleBadRequest(ex);
     }
 }

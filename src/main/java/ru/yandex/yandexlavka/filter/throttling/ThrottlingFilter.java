@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Filter limiting the requests per endpoints (URI)
+ */
 @Component
 @SuppressWarnings("UnstableApiUsage")
 public class ThrottlingFilter implements Filter {

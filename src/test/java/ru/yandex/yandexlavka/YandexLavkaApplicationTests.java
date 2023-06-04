@@ -1,13 +1,14 @@
 package ru.yandex.yandexlavka;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
@@ -19,6 +20,7 @@ import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequest
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
 import ru.yandex.yandexlavka.objects.utils.IntervalEntityUtils;
 import ru.yandex.yandexlavka.repository.CourierRepository;
 import ru.yandex.yandexlavka.repository.OrderRepository;
@@ -110,9 +112,9 @@ class YandexLavkaApplicationTests {
             CreateOrderRequest createOrderRequest = orderGenerator.createCreateOrderRequest();
             HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url, createOrderRequest);
             if (httpResponse.statusCode() != 200) continue;
-            List<OrderDto> response = mapper.readValue(httpResponse.body(), new TypeReference<>() {});
-            response.forEach(orderDto -> addedOrdersIds.add(orderDto.getOrderId()));
-            addedOrders += response.size();
+            CreateOrderResponse response = mapper.readValue(httpResponse.body(), CreateOrderResponse.class);
+            response.getOrders().forEach(orderDto -> addedOrdersIds.add(orderDto.getOrderId()));
+            addedOrders += response.getOrders().size();
         }
         return addedOrders;
     }
@@ -123,13 +125,12 @@ class YandexLavkaApplicationTests {
 
         HttpResponse<String> httpResponse = httpSender.sendPostRequest(httpClient, url);
 
-        assertThat(httpResponse.statusCode(), is(201));
+        assertThat(httpResponse.statusCode(), is(200));
 
-        List<OrderAssignResponse> response = mapper.readValue(httpResponse.body(), new TypeReference<>() {});
-        OrderAssignResponse assignResponse = response.get(0);
+        OrderAssignResponse response = mapper.readValue(httpResponse.body(), OrderAssignResponse.class);
 
         int assignedOrders = 0;
-        for (CouriersGroupOrders couriersGroupOrders : assignResponse.getCouriers()) {
+        for (CouriersGroupOrders couriersGroupOrders : response.getCouriers()) {
             Long courierId = couriersGroupOrders.getCourierId();
             for (GroupOrders groupOrders : couriersGroupOrders.getOrders()) {
                 List<Long> idList = groupOrders.getOrders().stream().map(OrderDto::getOrderId).toList();

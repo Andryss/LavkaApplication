@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.yandexlavka.exception.BadRequestException;
+import ru.yandex.yandexlavka.exception.NotFoundException;
 import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.GroupOrdersEntity;
@@ -26,6 +27,7 @@ import ru.yandex.yandexlavka.serivce.rating.CourierRatingService;
 import ru.yandex.yandexlavka.serivce.rating.CourierRatingService.CourierMetaInfo;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +69,7 @@ public class CourierServiceImpl implements CourierService {
 
     private void courierEntityHasNoIntersectingIntervals(CourierEntity courierEntity) {
         if (hasIntersections(courierEntity.getWorkingHours()))
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("working hours has intersections %s", courierEntity.getWorkingHours()));
     }
 
     @Override
@@ -75,7 +77,7 @@ public class CourierServiceImpl implements CourierService {
     public GetCourierResponse getCourierById(Long courierId) {
         Optional<CourierDto> courierDtoOptional = courierRepository.findById(courierId).map(courierMapper::mapCourierDto);
         if (courierDtoOptional.isEmpty())
-            throw BadRequestException.EMPTY;
+            throw new NotFoundException(String.format("no courier with id %d", courierId));
         return new GetCourierResponse(courierDtoOptional.get());
     }
 
@@ -83,7 +85,7 @@ public class CourierServiceImpl implements CourierService {
     CourierEntity getCourierEntityById(Long courierId) {
         Optional<CourierEntity> courierEntityOptional = courierRepository.findById(courierId);
         if (courierEntityOptional.isEmpty())
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("no courier with id %d", courierId));
         return courierEntityOptional.get();
     }
 

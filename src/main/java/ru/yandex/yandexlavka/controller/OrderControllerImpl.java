@@ -1,15 +1,11 @@
 package ru.yandex.yandexlavka.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.yandexlavka.controller.validator.CreateOrderRequestValidator;
 import ru.yandex.yandexlavka.exception.BadRequestException;
-import ru.yandex.yandexlavka.exception.NotFoundException;
-import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderResponse;
@@ -20,8 +16,6 @@ import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
 import ru.yandex.yandexlavka.serivce.OrderService;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class OrderControllerImpl implements OrderController {
@@ -42,7 +36,7 @@ public class OrderControllerImpl implements OrderController {
     ) {
         createOrderRequestValidator.validate(createOrderRequest, bindingResult);
         if (bindingResult.hasErrors())
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(bindingResult.getAllErrors().toString());
         CreateOrderResponse response = orderService.addOrders(createOrderRequest);
         return ResponseEntity.ok(response);
     }
@@ -70,7 +64,7 @@ public class OrderControllerImpl implements OrderController {
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors())
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(bindingResult.getAllErrors().toString());
         CompleteOrderResponse response = orderService.completeOrders(completeOrderRequestDto);
         return ResponseEntity.ok(response);
     }

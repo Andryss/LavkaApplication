@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.yandexlavka.exception.BadRequestException;
+import ru.yandex.yandexlavka.exception.NotFoundException;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
@@ -67,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void courierEntityHasNoIntersectingIntervals(OrderEntity orderEntity) {
         if (hasIntersections(orderEntity.getDeliveryHours()))
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("delivery hours has intersections: %s", orderEntity.getDeliveryHours()));
     }
 
     @Override
@@ -75,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
     public GetOrderResponse getOrderById(Long orderId) {
         Optional<OrderDto> orderDtoOptional = orderRepository.findById(orderId).map(orderMapper::mapOrderDto);
         if (orderDtoOptional.isEmpty())
-            throw BadRequestException.EMPTY;
+            throw new NotFoundException(String.format("no order with id %d", orderId));
         return new GetOrderResponse(orderDtoOptional.get());
     }
 
@@ -100,7 +101,7 @@ public class OrderServiceImpl implements OrderService {
 
         completeInfo.forEach(completeOrder -> {
             if (completeOrderIds.contains(completeOrder.getOrderId()))
-                throw BadRequestException.EMPTY;
+                throw new BadRequestException(String.format("can't complete order with id %d twice", completeOrder.getOrderId()));
             completeOrderIds.add(completeOrder.getOrderId());
 
             courierIdToCompleteOrderIds.computeIfAbsent(completeOrder.getCourierId(), id -> new HashSet<>())
@@ -111,15 +112,15 @@ public class OrderServiceImpl implements OrderService {
         Set<Long> completeCourierIds = courierIdToCompleteOrderIds.keySet();
         List<CourierEntity> fetchedCourierEntities = courierRepository.findAllByCourierIdIn(completeCourierIds);
         if (fetchedCourierEntities.size() != completeCourierIds.size())
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("some couriers with ids from %s doesn't exist", completeCourierIds));
 
         // Check if all orders exist
         List<OrderEntity> fetchedOrderEntities = orderRepository.findAllByOrderIdIn(completeOrderIds);
         if (fetchedOrderEntities.size() != completeOrderIds.size())
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("some orders with ids from %s doesn't exist", completeOrderIds));
         // Check if all orders can be completed
         if (fetchedOrderEntities.stream().anyMatch(orderEntity -> orderEntity.getAssignedGroupOrder() == null))
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("some orders with ids from %s already assigned to some group", completeCourierIds));
 
         // Check if all orders was completed by assigned couriers
         fetchedCourierEntities.forEach(courierEntity -> {
@@ -128,8 +129,10 @@ public class OrderServiceImpl implements OrderService {
                     .map(OrderEntity::getOrderId)
                     .collect(Collectors.toSet());
             Set<Long> completedOrderIds = courierIdToCompleteOrderIds.get(courierEntity.getCourierId());
-            if (!assignedOrderIds.containsAll(completedOrderIds))
-                throw BadRequestException.EMPTY;
+            if (!assignedOrderIds.containsAll(completedOrderIds)) {
+                completedOrderIds.removeAll(assignedOrderIds);
+                throw new BadRequestException(String.format("courier with id %d can't complete %s: not assigned to him", courierEntity.getCourierId(), completedOrderIds));
+            }
         });
 
         // Create mappings (courierId/orderId to CompletedTime)
@@ -143,20 +146,23 @@ public class OrderServiceImpl implements OrderService {
         // Check if all orders can be completed (again)
         if (fetchedOrderEntities.stream().anyMatch(orderEntity -> orderEntity.getCompletedTime() != null &&
                 !orderEntity.getCompletedTime().equals(orderIdToCompletedTime.get(orderEntity.getOrderId()))))
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("some orders with ids from %s has already completed at another time", completeOrderIds));
 
         // Check if all orders/couriers has right deliveryTime/workingHours
         fetchedOrderEntities.forEach(fetchedOrderEntity -> {
             LocalDateTime completedTime = orderIdToCompletedTime.get(fetchedOrderEntity.getOrderId());
             if (!fetchedOrderEntity.getAssignedGroupOrder().getAssignedDate().equals(completedTime.toLocalDate()))
-                throw BadRequestException.EMPTY;
+                throw new BadRequestException(String.format("order with id %d belongs to a group which assigned another date, not %s",
+                        fetchedOrderEntity.getOrderId(), completedTime.toLocalDate()));
             if (!isInsideAnyInterval(completedTime.toLocalTime(), fetchedOrderEntity.getDeliveryHours()))
-                throw BadRequestException.EMPTY;
+                throw new BadRequestException(String.format("order with id %d can't be completed at %s: has different delivery hours",
+                        fetchedOrderEntity.getOrderId(), completedTime.toLocalTime()));
         });
         fetchedCourierEntities.forEach(fetchedCourierEntity -> {
             LocalDateTime completedTime = courierIdToCompletedTime.get(fetchedCourierEntity.getCourierId());
             if (!isInsideAnyInterval(completedTime.toLocalTime(), fetchedCourierEntity.getWorkingHours()))
-                throw BadRequestException.EMPTY;
+                throw new BadRequestException(String.format("courier with id %d can't complete at %s: has different working hours",
+                        fetchedCourierEntity.getCourierId(), completedTime.toLocalTime()));
         });
 
         // Complete orders
@@ -170,7 +176,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderAssignResponse assignOrders(LocalDate date) {
         if (groupOrderRepository.existsByAssignedDateEquals(date))
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("orders has already assigned at %s", date));
 
         AssignedOrdersInfo assignedOrdersInfo = orderAssignService.assignOrders(date);
         return new OrderAssignResponse(

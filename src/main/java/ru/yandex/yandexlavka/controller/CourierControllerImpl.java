@@ -3,13 +3,9 @@ package ru.yandex.yandexlavka.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.yandexlavka.controller.validator.CreateCourierRequestValidator;
 import ru.yandex.yandexlavka.exception.BadRequestException;
-import ru.yandex.yandexlavka.exception.NotFoundException;
-import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
@@ -19,7 +15,6 @@ import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMeta
 import ru.yandex.yandexlavka.serivce.CourierService;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @RestController
 public class CourierControllerImpl implements CourierController {
@@ -40,7 +35,7 @@ public class CourierControllerImpl implements CourierController {
     ) {
         createCourierRequestValidator.validate(createCourierRequest, bindingResult);
         if (bindingResult.hasErrors())
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(bindingResult.getAllErrors().toString());
         CreateCouriersResponse response = courierService.addCouriers(createCourierRequest);
         return ResponseEntity.ok(response);
     }
@@ -69,7 +64,7 @@ public class CourierControllerImpl implements CourierController {
             LocalDate endDate
     ) {
         if (!startDate.isBefore(endDate))
-            throw BadRequestException.EMPTY;
+            throw new BadRequestException(String.format("%s is after %s", startDate, endDate));
         GetCourierMetaInfoResponse response = courierService.getCourierMetaInfo(courierId, startDate, endDate);
         return ResponseEntity.ok(response);
     }

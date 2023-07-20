@@ -1,6 +1,5 @@
 package ru.yandex.yandexlavka.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -9,12 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
@@ -29,7 +24,6 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,28 +33,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OrderControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    OrderUtil orderUtil;
 
     @Autowired
-    ObjectMapper mapper;
-
-
-    private ResultActions createOrdersReturnResult(CreateOrderRequest request) throws Exception {
-        MockHttpServletRequestBuilder requestBuilder = post("/orders");
-        if (request != null) requestBuilder
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(request));
-        return mockMvc.perform(requestBuilder)
-                .andDo(print());
-    }
-
-    private CreateOrderResponse createOrders(CreateOrderRequest request) throws Exception {
-        MvcResult mvcResult = createOrdersReturnResult(request)
-                .andExpect(status().isOk())
-                .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
-        return mapper.readValue(content, CreateOrderResponse.class);
-    }
+    MockMvc mockMvc;
+    
 
     @Test
     @DirtiesContext
@@ -70,7 +47,7 @@ class OrderControllerTest {
         CreateOrderRequest request = new CreateOrderRequest(List.of(orderDto));
 
         // when
-        CreateOrderResponse response = createOrders(request);
+        CreateOrderResponse response = orderUtil.createOrders(request);
 
         // then
         List<OrderDto> createdOrderDtos = response.getOrders();
@@ -89,7 +66,7 @@ class OrderControllerTest {
     @MethodSource("provideInvalidCreateOrderRequests")
     void whenCreateOrderWithInvalidData_thenReturnBadRequest(CreateOrderRequest request) throws Exception {
         // when + then
-        createOrdersReturnResult(request)
+        orderUtil.createOrdersReturnResult(request)
                 .andExpect(status().isBadRequest());
     }
 
@@ -132,33 +109,20 @@ class OrderControllerTest {
                 new CreateOrderRequest(List.of(new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), -1))),
         };
     }
-
-
-    private ResultActions getOrderByIdReturnResult(Long orderId) throws Exception {
-        return mockMvc.perform(get("/orders/{orderId}", orderId))
-                .andDo(print());
-    }
-
-    private GetOrderResponse getOrderById(Long orderId) throws Exception {
-        MvcResult mvcResult = getOrderByIdReturnResult(orderId)
-                .andExpect(status().isOk())
-                .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
-        return mapper.readValue(content, GetOrderResponse.class);
-    }
+    
 
     @Test
     @DirtiesContext
     void whenGetOrderById_thenReturnEqualOne() throws Exception {
         // given
-        CreateOrderResponse createOrderResponse = createOrders(
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(
                 new CreateOrderRequest(List.of(new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)))
         );
         OrderDto orderDto = createOrderResponse.getOrders().get(0);
         Long orderId = orderDto.getOrderId();
 
         // when
-        GetOrderResponse response = getOrderById(orderId);
+        GetOrderResponse response = orderUtil.getOrderById(orderId);
 
         // then
         OrderDto foundOrderDto = response.getOrder();
@@ -176,34 +140,16 @@ class OrderControllerTest {
     @Test
     void whenGetOrderByNonExistingId_thenReturnNotFound() throws Exception {
         // when + then
-        getOrderByIdReturnResult(Long.MIN_VALUE)
+        orderUtil.getOrderByIdReturnResult(Long.MIN_VALUE)
                 .andExpect(status().isNotFound());
     }
-
-
-    private ResultActions getOrdersReturnResult(Integer offset, Integer limit) throws Exception {
-        MockHttpServletRequestBuilder requestBuilder = get("/orders");
-        if (offset != null) requestBuilder
-                .param("offset", String.valueOf(offset));
-        if (limit != null) requestBuilder
-                .param("limit", String.valueOf(limit));
-        return mockMvc.perform(requestBuilder)
-                .andDo(print());
-    }
-
-    private GetOrdersResponse getOrders(Integer offset, Integer limit) throws Exception {
-        MvcResult mvcResult = getOrdersReturnResult(offset, limit)
-                .andExpect(status().isOk())
-                .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
-        return mapper.readValue(content, GetOrdersResponse.class);
-    }
+    
 
     @Test
     @DirtiesContext
     void whenGetOrders_thenReturnAllEqualOnes() throws Exception {
         // given
-        CreateOrderResponse createOrderResponse = createOrders(
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(
                 new CreateOrderRequest(List.of(
                         new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10),
                         new CreateOrderDto(10.0f, 2, List.of("22:00-22:30"), 2),
@@ -213,7 +159,7 @@ class OrderControllerTest {
         List<OrderDto> createdOrderDtos = createOrderResponse.getOrders();
 
         // when
-        GetOrdersResponse response = getOrders(0, 3);
+        GetOrdersResponse response = orderUtil.getOrders(0, 3);
 
         // then
         List<OrderDto> foundOrderDtos = response.getOrders();
@@ -225,7 +171,7 @@ class OrderControllerTest {
     @MethodSource("provideInvalidGetOrdersParameters")
     void whenGetOrdersWithInvalidParameters_thenReturnBadRequest(Integer offset, Integer limit) throws Exception {
         // when + then
-        getOrdersReturnResult(offset, limit)
+        orderUtil.getOrdersReturnResult(offset, limit)
                 .andExpect(status().isBadRequest());
     }
 
@@ -249,7 +195,7 @@ class OrderControllerTest {
     @DirtiesContext
     void whenGetOrdersWithDifferentParameters_thenReturnValidSlice() throws Exception {
         // given
-        CreateOrderResponse createOrderResponse = createOrders(
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(
                 new CreateOrderRequest(List.of(
                         new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10),
                         new CreateOrderDto(10.0f, 2, List.of("22:00-22:30"), 2),
@@ -259,19 +205,19 @@ class OrderControllerTest {
         List<OrderDto> createdOrderDtos = createOrderResponse.getOrders();
 
         // when + then
-        assertThat(getOrders(0, 1).getOrders(), is(equalTo(createdOrderDtos.subList(0, 1))));
-        assertThat(getOrders(0, 2).getOrders(), is(equalTo(createdOrderDtos.subList(0, 2))));
+        assertThat(orderUtil.getOrders(0, 1).getOrders(), is(equalTo(createdOrderDtos.subList(0, 1))));
+        assertThat(orderUtil.getOrders(0, 2).getOrders(), is(equalTo(createdOrderDtos.subList(0, 2))));
 
-        assertThat(getOrders(1, 1).getOrders(), is(equalTo(createdOrderDtos.subList(1, 2))));
-        assertThat(getOrders(1, 2).getOrders(), is(equalTo(createdOrderDtos.subList(1, 3))));
-        assertThat(getOrders(1, 3).getOrders(), is(equalTo(createdOrderDtos.subList(1, 3))));
+        assertThat(orderUtil.getOrders(1, 1).getOrders(), is(equalTo(createdOrderDtos.subList(1, 2))));
+        assertThat(orderUtil.getOrders(1, 2).getOrders(), is(equalTo(createdOrderDtos.subList(1, 3))));
+        assertThat(orderUtil.getOrders(1, 3).getOrders(), is(equalTo(createdOrderDtos.subList(1, 3))));
 
-        assertThat(getOrders(2, 1).getOrders(), is(equalTo(createdOrderDtos.subList(2, 3))));
-        assertThat(getOrders(2, 2).getOrders(), is(equalTo(createdOrderDtos.subList(2, 3))));
-        assertThat(getOrders(2, 3).getOrders(), is(equalTo(createdOrderDtos.subList(2, 3))));
+        assertThat(orderUtil.getOrders(2, 1).getOrders(), is(equalTo(createdOrderDtos.subList(2, 3))));
+        assertThat(orderUtil.getOrders(2, 2).getOrders(), is(equalTo(createdOrderDtos.subList(2, 3))));
+        assertThat(orderUtil.getOrders(2, 3).getOrders(), is(equalTo(createdOrderDtos.subList(2, 3))));
 
-        assertThat(getOrders(3, 1).getOrders(), is(emptyIterable()));
-        assertThat(getOrders(3, 2).getOrders(), is(emptyIterable()));
-        assertThat(getOrders(3, 3).getOrders(), is(emptyIterable()));
+        assertThat(orderUtil.getOrders(3, 1).getOrders(), is(emptyIterable()));
+        assertThat(orderUtil.getOrders(3, 2).getOrders(), is(emptyIterable()));
+        assertThat(orderUtil.getOrders(3, 3).getOrders(), is(emptyIterable()));
     }
 }

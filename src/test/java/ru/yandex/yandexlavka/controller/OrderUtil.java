@@ -8,10 +8,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
+
+import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -73,5 +76,21 @@ public class OrderUtil {
                 .andReturn();
         String content = mvcResult.getResponse().getContentAsString();
         return mapper.readValue(content, GetOrdersResponse.class);
+    }
+
+    public ResultActions assignOrdersReturnResult(LocalDate date) throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = post("/orders/assign");
+        if (date != null) requestBuilder
+                .param("date", String.valueOf(date));
+        return mockMvc.perform(requestBuilder)
+                .andDo(print());
+    }
+
+    public OrderAssignResponse assignOrders(LocalDate date) throws Exception {
+        MvcResult mvcResult = assignOrdersReturnResult(date)
+                .andExpect(status().isOk())
+                .andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+        return mapper.readValue(content, OrderAssignResponse.class);
     }
 }

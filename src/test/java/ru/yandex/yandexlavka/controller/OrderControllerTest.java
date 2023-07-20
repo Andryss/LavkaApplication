@@ -10,20 +10,31 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.yandexlavka.objects.dto.CourierDto;
+import ru.yandex.yandexlavka.objects.dto.CourierType;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.CouriersGroupOrders;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.GroupOrders;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
+import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierDto;
+import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
+import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderDto;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
 
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,6 +45,9 @@ class OrderControllerTest {
 
     @Autowired
     OrderUtil orderUtil;
+
+    @Autowired
+    CourierUtil courierUtil;
 
     @Autowired
     MockMvc mockMvc;
@@ -220,4 +234,86 @@ class OrderControllerTest {
         assertThat(orderUtil.getOrders(3, 2).getOrders(), is(emptyIterable()));
         assertThat(orderUtil.getOrders(3, 3).getOrders(), is(emptyIterable()));
     }
+
+    @Test
+    @DirtiesContext
+    void whenAssignOrders_thenAssignAndReturnEqualOneResponse() throws Exception {
+        // given
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)
+        )));
+        OrderDto createdOrderDto = createOrderResponse.getOrders().get(0);
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
+
+        // when
+        OrderAssignResponse response = orderUtil.assignOrders(LocalDate.now());
+
+        // then
+        List<CouriersGroupOrders> couriersGroupOrders = response.getCouriers();
+        assertThat(couriersGroupOrders, is(iterableWithSize(1)));
+        CouriersGroupOrders courierGroupOrder = couriersGroupOrders.get(0);
+        assertThat(courierGroupOrder.getCourierId(), is(equalTo(createdCourierDto.getCourierId())));
+
+        List<GroupOrders> groupOrders = courierGroupOrder.getOrders();
+        assertThat(groupOrders, is(iterableWithSize(1)));
+        GroupOrders groupOrder = groupOrders.get(0);
+        assertThat(groupOrder.getGroupOrderId(), is(notNullValue()));
+
+        List<OrderDto> orders = groupOrder.getOrders();
+        assertThat(orders, is(iterableWithSize(1)));
+        OrderDto order = orders.get(0);
+        assertThat(order, is(equalTo(createdOrderDto)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidAssignOrdersParameters")
+    void whenAssignOrdersWithInvalidParameters_thenReturnBadRequest(String date) throws Exception {
+        // when + then
+        mockMvc.perform(post("/orders/assign")
+                        .param("date", date))
+                .andExpect(status().isBadRequest());
+    }
+
+    private static String[] provideInvalidAssignOrdersParameters() {
+        return new String[]{
+                "invalid",
+                "2000-02-30",
+                "2000-02-50",
+                "20000-02-10",
+                "2000-13-10"
+        };
+    }
+
+    @Test
+    @DirtiesContext
+    void whenAssignOrdersAdvanced_thenAssignAllOrders() throws Exception {
+        // given
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10),
+                new CreateOrderDto(10.0f, 6, List.of("22:00-22:30"), 2),
+                new CreateOrderDto(7.5f, 3, List.of("08:00-11:00", "12:00-17:30", "17:50-18:00"), 50)
+        )));
+        List<OrderDto> createdOrders = createOrderResponse.getOrders();
+        courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00")),
+                new CreateCourierDto(CourierType.BIKE, List.of(1, 3, 5), List.of("08:00-08:50")),
+                new CreateCourierDto(CourierType.AUTO, List.of(1, 6), List.of("10:00-12:00", "13:00-15:00", "17:30-23:00"))
+        )));
+
+        // when
+        OrderAssignResponse response = orderUtil.assignOrders(LocalDate.now());
+
+        // then
+        List<OrderDto> assignedOrderDtos = response.getCouriers().stream()
+                .flatMap(cgo -> cgo.getOrders().stream())
+                .flatMap(go -> go.getOrders().stream())
+                .sorted(Comparator.comparingLong(OrderDto::getOrderId))
+                .toList();
+        assertThat(assignedOrderDtos, is(iterableWithSize(3)));
+        assertThat(assignedOrderDtos, is(equalTo(createdOrders)));
+    }
+
 }

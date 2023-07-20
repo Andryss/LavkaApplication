@@ -23,7 +23,7 @@ public class CreateOrderDto {
     Integer regions;
 
     @NotEmpty
-    List<@Pattern(regexp = "^([0-1]\\d|2[0-3]):[0-5]\\d-([0-1]\\d|2[0-3]):[0-5]\\d$") String> deliveryHours;
+    List<@NotNull @Pattern(regexp = "^([0-1]\\d|2[0-3]):[0-5]\\d-([0-1]\\d|2[0-3]):[0-5]\\d$") String> deliveryHours;
 
     @NotNull
     @Positive

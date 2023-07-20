@@ -254,19 +254,16 @@ class OrderControllerTest {
         // then
         assertThat(response.getDate(), is(equalTo("2000-02-10")));
 
-        List<CouriersGroupOrders> couriersGroupOrders = response.getCouriers();
-        assertThat(couriersGroupOrders, is(iterableWithSize(1)));
-        CouriersGroupOrders courierGroupOrder = couriersGroupOrders.get(0);
+        assertThat(response.getCouriers(), is(iterableWithSize(1)));
+        CouriersGroupOrders courierGroupOrder = response.getCouriers().get(0);
         assertThat(courierGroupOrder.getCourierId(), is(equalTo(createdCourierDto.getCourierId())));
 
-        List<GroupOrders> groupOrders = courierGroupOrder.getOrders();
-        assertThat(groupOrders, is(iterableWithSize(1)));
-        GroupOrders groupOrder = groupOrders.get(0);
+        assertThat(courierGroupOrder.getOrders(), is(iterableWithSize(1)));
+        GroupOrders groupOrder = courierGroupOrder.getOrders().get(0);
         assertThat(groupOrder.getGroupOrderId(), is(notNullValue()));
 
-        List<OrderDto> orders = groupOrder.getOrders();
-        assertThat(orders, is(iterableWithSize(1)));
-        OrderDto order = orders.get(0);
+        assertThat(groupOrder.getOrders(), is(iterableWithSize(1)));
+        OrderDto order = groupOrder.getOrders().get(0);
         assertThat(order, is(equalTo(createdOrderDto)));
     }
 

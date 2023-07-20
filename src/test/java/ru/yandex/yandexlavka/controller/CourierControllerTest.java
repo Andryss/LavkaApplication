@@ -12,9 +12,15 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.yandexlavka.objects.dto.CourierDto;
 import ru.yandex.yandexlavka.objects.dto.CourierType;
+import ru.yandex.yandexlavka.objects.dto.OrderDto;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.CouriersGroupOrders;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierDto;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderDto;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
+import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
 
@@ -35,6 +41,9 @@ class CourierControllerTest {
     
     @Autowired
     CourierUtil courierUtil;
+
+    @Autowired
+    OrderUtil orderUtil;
 
     @Autowired
     MockMvc mockMvc;
@@ -213,5 +222,47 @@ class CourierControllerTest {
         assertThat(courierUtil.getCouriers(3, 1).getCouriers(), is(emptyIterable()));
         assertThat(courierUtil.getCouriers(3, 2).getCouriers(), is(emptyIterable()));
         assertThat(courierUtil.getCouriers(3, 3).getCouriers(), is(emptyIterable()));
+    }
+
+    @Test
+    @DirtiesContext
+    void whenGetCourierAssignments_thenReturnEqualOnes() throws Exception {
+        // given
+        orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)
+        )));
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
+        OrderAssignResponse orderAssignments = orderUtil.assignOrders("2000-02-10");
+        CouriersGroupOrders courierAssignment = orderAssignments.getCouriers().get(0);
+
+        // when
+        OrderAssignResponse response = courierUtil.getCourierAssignments("2000-02-10", createdCourierDto.getCourierId());
+
+        // then
+        assertThat(response.getDate(), is(equalTo("2000-02-10")));
+        assertThat(response.getCouriers(), is(iterableWithSize(1)));
+        assertThat(response.getCouriers().get(0), is(equalTo(courierAssignment)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidGetCourierAssignmentsParameters")
+    void whenGetCourierAssignmentsWithInvalidParameters_thenReturnBadRequest(String date, Long courierId) throws Exception {
+        courierUtil.getCourierAssignmentsReturnResult(date, courierId)
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> provideInvalidGetCourierAssignmentsParameters() {
+        return Stream.of(
+                Arguments.of("invalid", 1L),
+                Arguments.of("2000-02-30", 1L),
+                Arguments.of("2000-02-50", 1L),
+                Arguments.of("20000-02-10", 1L),
+                Arguments.of("2000-13-10", 1L),
+                Arguments.of("2000-02-20", null),
+                Arguments.of("2000-02-20", 1L) // non-existing courier
+        );
     }
 }

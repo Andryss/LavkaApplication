@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
@@ -73,5 +74,23 @@ public class CourierUtil {
                 .andReturn();
         String content = mvcResult.getResponse().getContentAsString();
         return mapper.readValue(content, GetCouriersResponse.class);
+    }
+
+    public ResultActions getCourierAssignmentsReturnResult(String date, Long courierId) throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = get("/couriers/assignments");
+        if (date != null) requestBuilder
+                .param("date", date);
+        if (courierId != null) requestBuilder
+                .param("courier_id", String.valueOf(courierId));
+        return mockMvc.perform(requestBuilder)
+                .andDo(print());
+    }
+
+    public OrderAssignResponse getCourierAssignments(String date, Long courierId) throws Exception {
+        MvcResult mvcResult = getCourierAssignmentsReturnResult(date, courierId)
+                .andExpect(status().isOk())
+                .andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+        return mapper.readValue(content, OrderAssignResponse.class);
     }
 }

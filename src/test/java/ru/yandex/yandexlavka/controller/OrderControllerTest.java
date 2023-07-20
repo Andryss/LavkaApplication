@@ -249,7 +249,7 @@ class OrderControllerTest {
         CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
 
         // when
-        OrderAssignResponse response = orderUtil.assignOrders(LocalDate.now());
+        OrderAssignResponse response = orderUtil.assignOrders("2000-02-10");
 
         // then
         List<CouriersGroupOrders> couriersGroupOrders = response.getCouriers();
@@ -272,8 +272,7 @@ class OrderControllerTest {
     @MethodSource("provideInvalidAssignOrdersParameters")
     void whenAssignOrdersWithInvalidParameters_thenReturnBadRequest(String date) throws Exception {
         // when + then
-        mockMvc.perform(post("/orders/assign")
-                        .param("date", date))
+        orderUtil.assignOrdersReturnResult(date)
                 .andExpect(status().isBadRequest());
     }
 
@@ -304,7 +303,7 @@ class OrderControllerTest {
         )));
 
         // when
-        OrderAssignResponse response = orderUtil.assignOrders(LocalDate.now());
+        OrderAssignResponse response = orderUtil.assignOrders("2000-02-10");
 
         // then
         List<OrderDto> assignedOrderDtos = response.getCouriers().stream()

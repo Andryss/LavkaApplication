@@ -78,15 +78,15 @@ public class OrderUtil {
         return mapper.readValue(content, GetOrdersResponse.class);
     }
 
-    public ResultActions assignOrdersReturnResult(LocalDate date) throws Exception {
+    public ResultActions assignOrdersReturnResult(String date) throws Exception {
         MockHttpServletRequestBuilder requestBuilder = post("/orders/assign");
         if (date != null) requestBuilder
-                .param("date", String.valueOf(date));
+                .param("date", date);
         return mockMvc.perform(requestBuilder)
                 .andDo(print());
     }
 
-    public OrderAssignResponse assignOrders(LocalDate date) throws Exception {
+    public OrderAssignResponse assignOrders(String date) throws Exception {
         MvcResult mvcResult = assignOrdersReturnResult(date)
                 .andExpect(status().isOk())
                 .andReturn();

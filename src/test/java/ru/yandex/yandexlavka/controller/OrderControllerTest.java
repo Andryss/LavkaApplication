@@ -252,6 +252,8 @@ class OrderControllerTest {
         OrderAssignResponse response = orderUtil.assignOrders("2000-02-10");
 
         // then
+        assertThat(response.getDate(), is(equalTo("2000-02-10")));
+
         List<CouriersGroupOrders> couriersGroupOrders = response.getCouriers();
         assertThat(couriersGroupOrders, is(iterableWithSize(1)));
         CouriersGroupOrders courierGroupOrder = couriersGroupOrders.get(0);

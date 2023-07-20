@@ -19,8 +19,8 @@ public class CreateCourierDto {
     CourierType courierType;
 
     @NotEmpty
-    List<@Positive Integer> regions;
+    List<@NotNull @Positive Integer> regions;
 
     @NotEmpty
-    List<@Pattern(regexp = "^([0-1]\\d|2[0-3]):[0-5]\\d-([0-1]\\d|2[0-3]):[0-5]\\d$") String> workingHours;
+    List<@NotNull @Pattern(regexp = "^([0-1]\\d|2[0-3]):[0-5]\\d-([0-1]\\d|2[0-3]):[0-5]\\d$") String> workingHours;
 }

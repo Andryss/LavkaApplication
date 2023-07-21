@@ -13,6 +13,7 @@ import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMetaInfoResponse;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -92,5 +93,23 @@ public class CourierUtil {
                 .andReturn();
         String content = mvcResult.getResponse().getContentAsString();
         return mapper.readValue(content, OrderAssignResponse.class);
+    }
+
+    public ResultActions getCourierMetaInfoReturnResult(Long courierId, String startDate, String endDate) throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = get("/couriers/meta-info/{coueirId}", courierId);
+        if (startDate != null) requestBuilder
+                .param("start_date", startDate);
+        if (endDate != null) requestBuilder
+                .param("end_date", endDate);
+        return mockMvc.perform(requestBuilder)
+                .andDo(print());
+    }
+
+    public GetCourierMetaInfoResponse getCourierMetaInfo(Long courierId, String startDate, String endDate) throws Exception {
+        MvcResult mvcResult = getCourierMetaInfoReturnResult(courierId, startDate, endDate)
+                .andExpect(status().isOk())
+                .andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+        return mapper.readValue(content, GetCourierMetaInfoResponse.class);
     }
 }

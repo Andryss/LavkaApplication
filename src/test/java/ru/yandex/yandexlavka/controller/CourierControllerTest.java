@@ -15,6 +15,8 @@ import ru.yandex.yandexlavka.objects.dto.CourierType;
 import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.CouriersGroupOrders;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierDto;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
@@ -23,7 +25,11 @@ import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCourierResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.courier.GetCouriersResponse;
+import ru.yandex.yandexlavka.objects.mapping.get.courier.metainfo.GetCourierMetaInfoResponse;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -263,6 +269,67 @@ class CourierControllerTest {
                 Arguments.of("2000-13-10", 1L),
                 Arguments.of("2000-02-20", null),
                 Arguments.of("2000-02-20", 1L) // non-existing courier
+        );
+    }
+
+    @Test
+    @DirtiesContext
+    void whenGetCourierMetaInfo_thenReturnCorrectScore() throws Exception {
+        // given
+        List<CreateOrderDto> createOrderDtoList = new ArrayList<>(24);
+        for (int i = 0; i < 24; i++) createOrderDtoList.add(new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10));
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(createOrderDtoList));
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        orderUtil.assignOrders("2000-02-10");
+        CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
+        Long createdCourierId = createdCourierDto.getCourierId();
+
+        LocalDateTime completeTime = LocalDate.parse("2000-02-10").atTime(11, 30);
+        List<CompleteOrder> completeOrderList = new ArrayList<>(24);
+        for (int i = 0; i < 24; i++) completeOrderList.add(new CompleteOrder(createdCourierId, createOrderResponse.getOrders().get(i).getOrderId(), completeTime));
+
+        orderUtil.completeOrders(new CompleteOrderRequestDto(completeOrderList));
+
+        // when
+        GetCourierMetaInfoResponse response = courierUtil.getCourierMetaInfo(createdCourierId, "2000-02-10", "2000-02-11");
+
+        // then
+        assertThat(response.getCourierId(), is(equalTo(createdCourierDto.getCourierId())));
+        assertThat(response.getCourierType(), is(equalTo(CourierType.FOOT)));
+        assertThat(response.getRegions(), containsInAnyOrder(1, 2, 3));
+        assertThat(response.getWorkingHours(), is(equalTo(List.of("10:00-12:00", "13:00-17:00"))));
+        assertThat(response.getEarnings(), is(equalTo(2 * 10 * 24)));
+        assertThat(response.getRating(), is(equalTo(3)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidGetCourierMetaInfoParameters")
+    void whenGetCourierMetaInfoWithInvalidParameters_thenReturnBadRequest(Long courierId, String startDate, String endDate) throws Exception {
+        // when + then
+        courierUtil.getCourierMetaInfoReturnResult(courierId, startDate, endDate)
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> provideInvalidGetCourierMetaInfoParameters() {
+        return Stream.of(
+                // invalid courierId
+                Arguments.of(1L, "2000-02-20", "2000-02-21"), // non-existing courier
+                // invalid startDate
+                Arguments.of(1L, "invalid", "2000-02-21"),
+                Arguments.of(1L, "2000-02-30", "2000-02-21"),
+                Arguments.of(1L, "2000-01-50", "2000-02-21"),
+                Arguments.of(1L, "20000-02-10", "2000-02-21"),
+                Arguments.of(1L, "2000-13-10", "2000-02-21"),
+                // invalid endDate
+                Arguments.of(1L, "2000-02-20", "invalid"),
+                Arguments.of(1L, "2000-02-20", "2000-02-30"),
+                Arguments.of(1L, "2000-02-20", "2000-02-50"),
+                Arguments.of(1L, "2000-02-20", "20000-02-10"),
+                Arguments.of(1L, "2000-02-20", "2000-13-10"),
+                Arguments.of(1L, "2000-02-20", "2000-02-20"),
+                Arguments.of(1L, "2000-02-20", "2000-02-19")
         );
     }
 }

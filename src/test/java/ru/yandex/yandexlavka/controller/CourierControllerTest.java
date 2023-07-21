@@ -272,15 +272,16 @@ class CourierControllerTest {
         );
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("provideCourierTypesWithMetaInfoCoefficients")
     @DirtiesContext
-    void whenGetCourierMetaInfo_thenReturnCorrectScore() throws Exception {
+    void whenGetCourierMetaInfo_thenReturnCorrectScore(CourierType courierType, Integer earningsCoefficient, Integer ratingsCoefficient) throws Exception {
         // given
         List<CreateOrderDto> createOrderDtoList = new ArrayList<>(24);
         for (int i = 0; i < 24; i++) createOrderDtoList.add(new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10));
         CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(createOrderDtoList));
         CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
-                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+                new CreateCourierDto(courierType, List.of(1), List.of("10:00-12:00", "13:00-17:00"))
         )));
         orderUtil.assignOrders("2000-02-10");
         CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
@@ -297,11 +298,20 @@ class CourierControllerTest {
 
         // then
         assertThat(response.getCourierId(), is(equalTo(createdCourierDto.getCourierId())));
-        assertThat(response.getCourierType(), is(equalTo(CourierType.FOOT)));
-        assertThat(response.getRegions(), containsInAnyOrder(1, 2, 3));
+        assertThat(response.getCourierType(), is(equalTo(courierType)));
+        assertThat(response.getRegions(), contains(1));
         assertThat(response.getWorkingHours(), is(equalTo(List.of("10:00-12:00", "13:00-17:00"))));
-        assertThat(response.getEarnings(), is(equalTo(2 * 10 * 24)));
-        assertThat(response.getRating(), is(equalTo(3)));
+
+        assertThat(response.getEarnings(), is(equalTo(earningsCoefficient * 10 * 24)));
+        assertThat(response.getRating(), is(equalTo(ratingsCoefficient)));
+    }
+
+    private static Stream<Arguments> provideCourierTypesWithMetaInfoCoefficients() {
+        return Stream.of(
+                Arguments.of(CourierType.FOOT, 2, 3),
+                Arguments.of(CourierType.BIKE, 3, 2),
+                Arguments.of(CourierType.AUTO, 4, 1)
+        );
     }
 
     @ParameterizedTest

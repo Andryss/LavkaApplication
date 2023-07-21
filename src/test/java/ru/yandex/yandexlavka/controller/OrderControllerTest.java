@@ -16,6 +16,9 @@ import ru.yandex.yandexlavka.objects.dto.OrderDto;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.CouriersGroupOrders;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.GroupOrders;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrder;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierDto;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCourierRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.courier.CreateCouriersResponse;
@@ -26,9 +29,11 @@ import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -314,4 +319,98 @@ class OrderControllerTest {
         assertThat(assignedOrderDtos, is(equalTo(createdOrders)));
     }
 
+    @Test
+    @DirtiesContext
+    void whenCompleteOrder_thenSetCompletedTime() throws Exception {
+        // given
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)
+        )));
+        OrderDto createdOrderDto = createOrderResponse.getOrders().get(0);
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
+        orderUtil.assignOrders("2000-02-10");
+
+        Long createdOrderId = createdOrderDto.getOrderId();
+        Long createdCourierId = createdCourierDto.getCourierId();
+        LocalDateTime completeTime = LocalDate.parse("2000-02-10").atTime(11, 30);
+        CompleteOrderRequestDto request = new CompleteOrderRequestDto(List.of(
+                new CompleteOrder(createdCourierId, createdOrderId, completeTime)
+        ));
+
+        // when
+        CompleteOrderResponse response = orderUtil.completeOrders(request);
+
+        // then
+        assertThat(response.getOrders(), is(iterableWithSize(1)));
+        OrderDto completedOrder = response.getOrders().get(0);
+        assertThat(completedOrder, is(equalTo(orderUtil.getOrderById(createdOrderId).getOrder())));
+        assertThat(completedOrder.getCompletedTime(), is(equalTo(completeTime.toString())));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidCompleteOrderRequests")
+    void whenCompleteOrderWithInvalidData_thenReturnBadRequest(CompleteOrderRequestDto request) throws Exception {
+        // when + then
+        orderUtil.completeOrdersReturnResult(request)
+                .andExpect(status().isBadRequest());
+    }
+
+    private static CompleteOrderRequestDto[] provideInvalidCompleteOrderRequests() {
+        return new CompleteOrderRequestDto[]{
+                null,
+                new CompleteOrderRequestDto(null),
+                new CompleteOrderRequestDto(List.of()),
+                new CompleteOrderRequestDto(Collections.singletonList(null)),
+                new CompleteOrderRequestDto(List.of(new CompleteOrder(null, 1L, LocalDateTime.MAX))),
+                new CompleteOrderRequestDto(List.of(new CompleteOrder(1L, null, LocalDateTime.MAX))),
+                new CompleteOrderRequestDto(List.of(new CompleteOrder(1L, 1L, null))),
+                new CompleteOrderRequestDto(List.of(new CompleteOrder(1L, 1L, LocalDateTime.MAX))) // no such courier and order
+        };
+    }
+
+    @Test
+    @DirtiesContext
+    void whenCompleteOrderWithInvalidButExistingData_thenReturnBadRequest() throws Exception {
+        // given
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00"), 10), // should be assigned to first
+                new CreateOrderDto(2.0f, 5, List.of("10:00-12:00"), 10), // should be assigned to second
+                new CreateOrderDto(1.0f, 2, List.of("00:00-00:10"), 50)  // not assigned
+        )));
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00")),
+                new CreateCourierDto(CourierType.BIKE, List.of(2, 5, 6), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        orderUtil.assignOrders("2000-02-10");
+
+        Long firstCourierId = createCouriersResponse.getCouriers().get(0).getCourierId();
+        Long secondCourierId = createCouriersResponse.getCouriers().get(1).getCourierId();
+        Long nonExistingUserId = 1 + Math.max(firstCourierId, secondCourierId);
+        Long orderIdAssignedToFirst = createOrderResponse.getOrders().get(0).getOrderId();
+        Long orderIdAssignedToSecond = createOrderResponse.getOrders().get(1).getOrderId();
+        Long orderIdNotAssigned = createOrderResponse.getOrders().get(2).getOrderId();
+
+        LocalDateTime correctCompleteTime = LocalDate.parse("2000-02-10").atTime(11, 30);
+        LocalDateTime incorrectCompleteTime = LocalDate.parse("2000-02-10").atTime(13, 30);
+
+        // when + then
+        for (Arguments arguments : List.of(
+                // incorrect courier id
+                Arguments.of(secondCourierId, orderIdAssignedToFirst, correctCompleteTime),
+                Arguments.of(nonExistingUserId, orderIdAssignedToFirst, correctCompleteTime),
+                // incorrect order id
+                Arguments.of(firstCourierId, orderIdAssignedToSecond, correctCompleteTime),
+                Arguments.of(firstCourierId, orderIdNotAssigned, correctCompleteTime),
+                // incorrect complete time
+                Arguments.of(firstCourierId, orderIdAssignedToFirst, incorrectCompleteTime)
+        )) {
+            Object[] objects = arguments.get();
+            orderUtil.completeOrdersReturnResult(new CompleteOrderRequestDto(List.of(
+                    new CompleteOrder((Long) objects[0], (Long) objects[1], (LocalDateTime) objects[2])
+            ))).andExpect(status().isBadRequest());
+        }
+    }
 }

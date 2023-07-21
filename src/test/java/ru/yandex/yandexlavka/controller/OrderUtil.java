@@ -9,12 +9,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.yandex.yandexlavka.objects.mapping.assign.order.OrderAssignResponse;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderRequestDto;
+import ru.yandex.yandexlavka.objects.mapping.complete.order.CompleteOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderRequest;
 import ru.yandex.yandexlavka.objects.mapping.create.order.CreateOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrderResponse;
 import ru.yandex.yandexlavka.objects.mapping.get.order.GetOrdersResponse;
-
-import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -92,5 +92,22 @@ public class OrderUtil {
                 .andReturn();
         String content = mvcResult.getResponse().getContentAsString();
         return mapper.readValue(content, OrderAssignResponse.class);
+    }
+
+    public ResultActions completeOrdersReturnResult(CompleteOrderRequestDto request) throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = post("/orders/complete");
+        if (request != null) requestBuilder
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(request));
+        return mockMvc.perform(requestBuilder)
+                .andDo(print());
+    }
+
+    public CompleteOrderResponse completeOrders(CompleteOrderRequestDto request) throws Exception {
+        MvcResult mvcResult = completeOrdersReturnResult(request)
+                .andExpect(status().isOk())
+                .andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+        return mapper.readValue(content, CompleteOrderResponse.class);
     }
 }

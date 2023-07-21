@@ -33,13 +33,11 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -365,6 +363,33 @@ class OrderControllerTest {
         OrderDto completedOrder = response.getOrders().get(0);
         assertThat(completedOrder, is(equalTo(orderUtil.getOrderById(createdOrderId).getOrder())));
         assertThat(completedOrder.getCompletedTime(), is(equalTo(completeTime.toString())));
+    }
+
+    @Test
+    @DirtiesContext
+    void whenCompleteOrderAgain_thenAcceptAndDoNothing() throws Exception {
+        // given
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)
+        )));
+        OrderDto createdOrderDto = createOrderResponse.getOrders().get(0);
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
+        orderUtil.assignOrders("2000-02-10");
+
+        LocalDateTime completeTime = LocalDate.parse("2000-02-10").atTime(11, 30);
+        CompleteOrderRequestDto request = new CompleteOrderRequestDto(List.of(
+                new CompleteOrder(createdCourierDto.getCourierId(), createdOrderDto.getOrderId(), completeTime)
+        ));
+        CompleteOrderResponse response1 = orderUtil.completeOrders(request);
+
+        // when
+        CompleteOrderResponse response2 = orderUtil.completeOrders(request);
+
+        // then
+        assertThat(response2, is(equalTo(response1)));
     }
 
     @ParameterizedTest

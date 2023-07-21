@@ -272,6 +272,23 @@ class OrderControllerTest {
         assertThat(order, is(equalTo(createdOrderDto)));
     }
 
+    @Test
+    @DirtiesContext
+    void whenAssignOrdersAgain_thenReturnBadRequest() throws Exception {
+        // given
+        orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)
+        )));
+        courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        orderUtil.assignOrders("2000-02-10");
+
+        // when + then
+        orderUtil.assignOrdersReturnResult("2000-02-10")
+                .andExpect(status().isBadRequest());
+    }
+
     @ParameterizedTest
     @MethodSource("provideInvalidAssignOrdersParameters")
     void whenAssignOrdersWithInvalidParameters_thenReturnBadRequest(String date) throws Exception {

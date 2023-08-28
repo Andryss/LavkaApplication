@@ -9,9 +9,12 @@ import static java.util.Comparator.comparing;
 
 public class IntervalEntityUtils {
 
+    public static boolean belongsInterval(LocalTime point, IntervalEntity interval) {
+        return !point.isBefore(interval.getStartTime()) && !point.isAfter(interval.getEndTime());
+    }
+
     public static boolean isIntersecting(IntervalEntity interval1, IntervalEntity interval2) {
-        return !interval1.getStartTime().isBefore(interval2.getStartTime()) && !interval1.getStartTime().isAfter(interval2.getEndTime()) ||
-                !interval1.getEndTime().isBefore(interval2.getStartTime()) && !interval1.getEndTime().isAfter(interval2.getEndTime());
+        return belongsInterval(interval1.getStartTime(), interval2) || belongsInterval(interval2.getStartTime(), interval1);
     }
 
     public static boolean hasIntersections(List<IntervalEntity> intervalEntityList) {

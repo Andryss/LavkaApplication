@@ -455,4 +455,57 @@ class OrderControllerTest {
             ))).andExpect(status().isBadRequest());
         }
     }
+
+    @Test
+    @DirtiesContext
+    void whenCompleteOrderWithNonExistingId_thenReturnBadRequest() throws Exception {
+        // given
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)
+        )));
+        OrderDto createdOrderDto = createOrderResponse.getOrders().get(0);
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
+        orderUtil.assignOrders("2000-02-10");
+
+        Long nonExistingOrderId = createdOrderDto.getOrderId() + 1;
+        Long createdCourierId = createdCourierDto.getCourierId();
+        LocalDateTime completeTime = LocalDate.parse("2000-02-10").atTime(11, 30);
+        CompleteOrderRequestDto request = new CompleteOrderRequestDto(List.of(
+                new CompleteOrder(createdCourierId, nonExistingOrderId, completeTime)
+        ));
+
+        // when + then
+        orderUtil.completeOrdersReturnResult(request)
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DirtiesContext
+    void whenCompleteOrderWithSameIdTwice_thenReturnBadRequest() throws Exception {
+        // given
+        CreateOrderResponse createOrderResponse = orderUtil.createOrders(new CreateOrderRequest(List.of(
+                new CreateOrderDto(2.0f, 1, List.of("10:00-12:00", "13:00-17:00"), 10)
+        )));
+        OrderDto createdOrderDto = createOrderResponse.getOrders().get(0);
+        CreateCouriersResponse createCouriersResponse = courierUtil.createCouriers(new CreateCourierRequest(List.of(
+                new CreateCourierDto(CourierType.FOOT, List.of(1, 2, 3), List.of("10:00-12:00", "13:00-17:00"))
+        )));
+        CourierDto createdCourierDto = createCouriersResponse.getCouriers().get(0);
+        orderUtil.assignOrders("2000-02-10");
+
+        Long createdOrderId = createdOrderDto.getOrderId();
+        Long createdCourierId = createdCourierDto.getCourierId();
+        LocalDateTime completeTime = LocalDate.parse("2000-02-10").atTime(11, 30);
+        CompleteOrderRequestDto request = new CompleteOrderRequestDto(List.of(
+                new CompleteOrder(createdCourierId, createdOrderId, completeTime),
+                new CompleteOrder(createdCourierId, createdOrderId, completeTime)
+        ));
+
+        // when + then
+        orderUtil.completeOrdersReturnResult(request)
+                .andExpect(status().isBadRequest());
+    }
 }

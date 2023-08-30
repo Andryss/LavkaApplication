@@ -1,6 +1,8 @@
-# YandexLavkaApplication
+# LavkaApplication
 
-Project was created as test task at [yandex backend school](https://yandex.ru/yaintern/schools/backend)
+App for managing orders and couriers, distributing orders between couriers.
+
+For more information see [Endpoint specification](Lavka.json).
 
 # Requirements
 

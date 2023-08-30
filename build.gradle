@@ -5,7 +5,7 @@ plugins {
     id 'jacoco'
 }
 
-group = 'ru.yandex'
+group = 'ru.andryss'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
@@ -45,9 +45,9 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude : [
-                    "ru/yandex/yandexlavka/objects/*",
-                    "ru/yandex/yandexlavka/repository/OffsetLimitPageable*",
-                    "ru/yandex/yandexlavka/serivce/assignment/util/OrderDeliveryTimeResolver*"
+                    "ru/andryss/lavka/objects/*",
+                    "ru/andryss/lavka/repository/OffsetLimitPageable*",
+                    "ru/andryss/lavka/serivce/assignment/util/OrderDeliveryTimeResolver*"
             ])
         }))
     }
@@ -58,9 +58,9 @@ jacocoTestCoverageVerification {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude : [
-                    "ru/yandex/yandexlavka/objects/*",
-                    "ru/yandex/yandexlavka/repository/OffsetLimitPageable*",
-                    "ru/yandex/yandexlavka/serivce/assignment/util/OrderDeliveryTimeResolver*"
+                    "ru/andryss/lavka/objects/*",
+                    "ru/andryss/lavka/repository/OffsetLimitPageable*",
+                    "ru/andryss/lavka/serivce/assignment/util/OrderDeliveryTimeResolver*"
             ])
         }))
     }

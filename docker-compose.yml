@@ -1,8 +1,8 @@
 version: "3.9"
 
 services:
-  application:
-    container_name: yandex-lavka-app
+  app:
+    container_name: lavka-app
     build: .
     ports:
       - "8080:8080"
@@ -15,10 +15,10 @@ services:
       POSTGRES_PASSWORD: password
     depends_on: db
     networks:
-      - enrollment
+      - default
 
   db:
-    container_name: yandex-lavka-db
+    container_name: lavka-db
     image: postgres:15.2-alpine
     environment:
       POSTGRES_DB: lavka
@@ -28,8 +28,8 @@ services:
       - "5432:5432"
     restart: always
     networks:
-      - enrollment
+      - default
 
 networks:
-  enrollment:
+  default:
     driver: bridge

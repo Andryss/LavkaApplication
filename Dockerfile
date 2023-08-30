@@ -4,6 +4,6 @@ ARG JAR_FILE=build/libs/*SNAPSHOT.jar
 
 WORKDIR /opt/app
 
-COPY ${JAR_FILE} yandex-lavka.jar
+COPY ${JAR_FILE} lavka.jar
 
-ENTRYPOINT ["java","-jar","yandex-lavka.jar"]
+ENTRYPOINT ["java","-jar","lavka.jar"]

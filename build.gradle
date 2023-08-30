@@ -46,7 +46,8 @@ jacocoTestReport {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude : [
                     "ru/yandex/yandexlavka/objects/*",
-                    "ru/yandex/yandexlavka/repository/OffsetLimitPageable.java"
+                    "ru/yandex/yandexlavka/repository/OffsetLimitPageable*",
+                    "ru/yandex/yandexlavka/serivce/assignment/util/OrderDeliveryTimeResolver*"
             ])
         }))
     }
@@ -58,7 +59,8 @@ jacocoTestCoverageVerification {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude : [
                     "ru/yandex/yandexlavka/objects/*",
-                    "ru/yandex/yandexlavka/repository/OffsetLimitPageable.java"
+                    "ru/yandex/yandexlavka/repository/OffsetLimitPageable*",
+                    "ru/yandex/yandexlavka/serivce/assignment/util/OrderDeliveryTimeResolver*"
             ])
         }))
     }

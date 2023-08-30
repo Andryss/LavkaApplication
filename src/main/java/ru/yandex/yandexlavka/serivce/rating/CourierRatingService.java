@@ -1,8 +1,7 @@
 package ru.yandex.yandexlavka.serivce.rating;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 import ru.yandex.yandexlavka.objects.entity.CourierEntity;
 import ru.yandex.yandexlavka.objects.entity.OrderEntity;
 
@@ -22,9 +21,8 @@ public interface CourierRatingService {
      */
     CourierMetaInfo getCourierMetaInfo(CourierEntity courier, LocalDate startDate, LocalDate endDate, List<OrderEntity> completedOrders);
 
-    @Data
+    @Getter
     @AllArgsConstructor
-    @NoArgsConstructor
     class CourierMetaInfo {
         Integer rating;
         Integer earnings;
